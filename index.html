@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Muscle Tect - Mobile View</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+    <script src="firebase/config.js"></script>
+    <style>
+      /* Hide scrollbar for WebKit browsers */
+      ::-webkit-scrollbar {
+        display: none;
+      }
+      
+      /* Hide scrollbar for IE, Edge and Firefox */
+      html, body {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+      }
+      
+      :root {
+        --primary-teal: #00897b;
+        --emg-blue: #2196f3; /* Warna biru untuk EMG */
+        --imu-red: #f44336; /* Warna merah untuk IMU */
+        --light-teal-bg: #f0f7f6;
+        --white-card: #ffffff;
+        --text-dark: #2d3748;
+        --text-light: #718096;
+        --border-color: #e2e8f0;
+        --shadow: rgba(45, 55, 72, 0.1);
+        --danger-red: #d32f2f;
+        --success-green: #2e7d32;
+      }
+
+      /* Styling Dasar */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
+      }
+
+      body {
+        background-color: #e0e0e0;
+        color: var(--text-dark);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+
+      /* Frame Mobile */
+      .mobile-frame {
+        width: 100%;
+        max-width: 420px;
+        height: 100vh;
+        max-height: 844px;
+        background-color: var(--light-teal-bg);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        border-radius: 20px;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+
+      main {
+        flex-grow: 1;
+        overflow-y: auto;
+      }
+
+      /* Tampilan Halaman (Page) */
+      .page {
+        display: none;
+        padding: 1.5rem;
+        animation: fadeIn 0.4s ease-in-out;
+      }
+
+      .page.active {
+        display: block;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(15px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Header */
+      .app-header {
+        background-color: var(--primary-teal);
+        color: white;
+        padding: 1rem 1.5rem;
+        box-shadow: 0 4px 12px var(--shadow);
+        flex-shrink: 0;
+      }
+      .app-header.detail-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+      .app-header h1 {
+        font-size: 1.25rem;
+      }
+      .app-header .back-btn {
+        font-size: 1.2rem;
+        color: white;
+        background: none;
+        border: none;
+        cursor: pointer;
+      }
+
+      /* Komponen */
+      .card {
+        background-color: var(--white-card);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 8px 25px var(--shadow);
+      }
+      .page .card:last-child {
+        margin-bottom: 0;
+      }
+      .btn {
+        padding: 10px 20px;
+        border-radius: 12px;
+        border: none;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+      .btn-primary {
+        background-color: var(--primary-teal);
+        color: white;
+      }
+
+      /* Halaman Home */
+      .connection-status p {
+        font-size: 1rem;
+        color: var(--text-light);
+        margin-bottom: 0.5rem;
+      }
+      .connection-status .status-text {
+        font-weight: 600;
+        color: var(--text-dark);
+      }
+      .connection-action {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+      .data-display .label {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+        color: var(--text-dark);
+      }
+      .data-display .value {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-dark);
+      }
+      .imu-values {
+        display: flex;
+        justify-content: space-between;
+      }
+      .imu-values .value {
+        font-size: 1.2rem;
+      }
+
+      /* Indikator Otot */
+      .muscle-status {
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        color: var(--text-light);
+      }
+      .muscle-status span {
+        font-weight: 600;
+      }
+
+      /* Grafik */
+      .home-chart-container {
+        position: relative;
+        height: 220px;
+        display: flex;
+        flex-direction: column;
+      }
+      .home-chart-container h3 {
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+      }
+      .home-chart-container canvas {
+        flex-grow: 1;
+      }
+      .chart-container img {
+        width: 100%;
+        border-radius: 8px;
+      }
+
+      /* Halaman Lain */
+      .measurement-form h2 {
+        font-size: 1.2rem;
+        margin-bottom: 1.5rem;
+        color: var(--text-dark);
+      }
+      .form-group input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        font-size: 1rem;
+      }
+      .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+      }
+      .history-list .history-item {
+        align-items: center;
+      }
+      
+      .modal-content {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 400px;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+      
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+      
+      .modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--text-light);
+      }
+      .profile-menu {
+        list-style: none;
+        padding: 0;
+      }
+      
+      .profile-menu .menu-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        cursor: pointer;
+      }
+      .btn-logout {
+        width: 100%;
+        background-color: var(--danger-red);
+        color: white;
+        margin-top: 1rem;
+        padding: 0.8rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      .btn-logout:hover {
+        background-color: #b71c1c;
+      }
+
+      /* Navigasi */
+      .bottom-nav {
+        position: sticky;
+        bottom: 0;
+        width: 100%;
+        background-color: var(--white-card);
+        box-shadow: 0 -5px 20px var(--shadow);
+        border-top: 1px solid var(--border-color);
+        flex-shrink: 0;
+      }
+      .nav-container {
+        display: flex;
+        justify-content: space-around;
+        padding: 0.75rem 0;
+      }
+      .nav-btn {
+        background: none;
+        border: none;
+        color: var(--text-light);
+        cursor: pointer;
+        text-align: center;
+        font-size: 0.75rem;
+        transition: color 0.2s;
+      }
+      .nav-btn.active {
+        color: var(--primary-teal);
+      }
+      .nav-btn i {
+        font-size: 1.5rem;
+        margin-bottom: 0.25rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mobile-frame">
+      <main id="main-content"></main>
+
+      <nav class="bottom-nav">
+        <div class="nav-container">
+          <button class="nav-btn active" data-page="home">
+            <i class="fas fa-home"></i><br />Home
+          </button>
+          <button class="nav-btn" data-page="pengukuran">
+            <i class="fas fa-ruler-combined"></i><br />Pengukuran
+          </button>
+          <button class="nav-btn" data-page="riwayat">
+            <i class="fas fa-history"></i><br />Riwayat
+          </button>
+          <button class="nav-btn" data-page="akun">
+            <i class="fas fa-user"></i><br />Akun
+          </button>
+        </div>
+      </nav>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", async () => {
+        // Check if user is logged in
+        auth.onAuthStateChanged((user) => {
+          if (!user) {
+            // User is not logged in, redirect to login page
+            window.location.href = 'login.html';
+          } else {
+            // User is logged in, update UI
+            updateUserProfile(user);
+          }
+        });
+
+        // Function to update user profile in the UI
+        function updateUserProfile(user) {
+          const userName = document.getElementById('user-name');
+          const userEmail = document.getElementById('user-email');
+          const userAvatar = document.getElementById('user-avatar');
+          const joinDate = document.getElementById('join-date');
+          
+          if (userName) userName.textContent = user.displayName || 'User';
+          if (userEmail) userEmail.textContent = user.email || '';
+          if (userAvatar) {
+            userAvatar.src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=00897b&color=fff&size=100`;
+          }
+          
+          // Format and display join date
+          if (joinDate && user.metadata && user.metadata.creationTime) {
+            const date = new Date(user.metadata.creationTime);
+            joinDate.textContent = date.toLocaleDateString('id-ID', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            });
+          }
+        }
+        
+        // Function to handle logout
+        async function handleLogout() {
+          try {
+            await auth.signOut();
+            window.location.href = 'login.html';
+          } catch (error) {
+            console.error('Logout Error:', error);
+            alert('Gagal logout. Silakan coba lagi.');
+          }
+        }
+        const pages = {
+          home: `
+                    <div class="app-header"><h1>MUSCLE TECH</h1></div>
+                    <div id="page-home" class="page active">
+                        <div class="card">
+                            <div class="connection-action">
+                                <div class="connection-status">
+                                    <p>Tersambung ke:</p>
+                                    <span class="status-text">Device 1</span>
+                                </div>
+                                <button class="btn btn-primary">Connect</button>
+                            </div>
+                        </div>
+                        <div class="card data-display">
+                            <p class="label">EMG</p>
+                            <p class="value">20mV</p>
+                            <p class="muscle-status">Status: <span id="emg-status-text">Normal</span></p>
+                        </div>
+                        <div class="card data-display">
+                            <p class="label">IMU (x, y, z)</p>
+                            <div class="imu-values">
+                                <p class="value">X: 1.2</p>
+                                <p class="value">Y: 0.5</p>
+                                <p class="value">Z: 9.8</p>
+                            </div>
+                        </div>
+                        <div class="card home-chart-container">
+                            <h3>Grafik Realtime</h3>
+                            <canvas id="homeRealtimeChart"></canvas>
+                        </div>
+                    </div>
+                `,
+          // Halaman lainnya tetap sama...
+          pengukuran: `
+                    <div class="app-header"><h1>Halaman Pengukuran</h1></div>
+                    <div id="page-pengukuran" class="page active">
+                        <div class="card measurement-form">
+                            <h2>Masukkan Informasi Pengukuran</h2>
+                            <div class="form-group"><input type="text" placeholder="Nama"></div>
+                            <div class="form-group"><input type="text" placeholder="Otot"></div>
+                            <div class="form-group"><input type="text" placeholder="Aktivitas"></div>
+                            <div class="form-actions">
+                                <button class="btn btn-secondary"><i class="fas fa-sync-alt"></i>Reset</button>
+                                <button class="btn btn-primary"><i class="fas fa-play"></i>Mulai</button>
+                            </div>
+                        </div>
+                    </div>
+                `,
+          riwayat: `
+                    <div class="app-header"><h1>Riwayat Pengukuran</h1></div>
+                    <div id="page-riwayat" class="page active">
+                        <div class="card history-list">
+                            ${[...Array(7)]
+                              .map(
+                                (_, i) => `
+                            <div class="history-item" data-page="detail">
+                                <div class="info">
+                                    <div class="date">${
+                                      30 - Math.floor(i / 2)
+                                    } Juni, 15:${55 - i * 10}</div>
+                                    <div class="timestamp">29/06/2025</div>
+                                </div>
+                                <div class="actions"><i class="fas fa-ellipsis-v"></i></div>
+                            </div>
+                            `
+                              )
+                              .join("")}
+                        </div>
+                    </div>
+                `,
+          akun: `
+                    <div class="app-header">
+                      <h1>Profil Saya</h1>
+                    </div>
+                    <div id="page-akun" class="page active">
+                      <div class="card profile-header-card">
+                        <div class="profile-avatar">
+                          <img id="user-avatar" src="" alt="Profile" onerror="this.src='https://ui-avatars.com/api/?name=User&background=00897b&color=fff&size=100'">
+                          <button id="edit-avatar" class="btn-edit-avatar">
+                            <i class="fas fa-camera"></i>
+                          </button>
+                        </div>
+                        <h2 id="user-name">Memuat...</h2>
+                        <p id="user-email">memuat...</p>
+                        <p class="member-since">Anggota sejak: <span id="join-date">-</span></p>
+                      </div>
+                      
+                      <div class="card profile-menu">
+                        <div class="menu-item" id="edit-profile">
+                          <div class="menu-item-content">
+                            <i class="fas fa-user-edit icon"></i>
+                            <span class="label">Edit Profil</span>
+                          </div>
+                          <i class="fas fa-chevron-right chevron"></i>
+                        </div>
+                        
+                        <div class="menu-item" id="change-password">
+                          <div class="menu-item-content">
+                            <i class="fas fa-key icon"></i>
+                            <span class="label">Ganti Password</span>
+                          </div>
+                          <i class="fas fa-chevron-right chevron"></i>
+                        </div>
+                        
+                        <div class="menu-item">
+                          <div class="menu-item-content">
+                            <i class="fas fa-microchip icon"></i>
+                            <span class="label">Perangkat Saya</span>
+                          </div>
+                          <i class="fas fa-chevron-right chevron"></i>
+                        </div>
+                        
+                        <div class="menu-item">
+                          <div class="menu-item-content">
+                            <i class="fas fa-shield-halved icon"></i>
+                            <span class="label">Kebijakan Privasi</span>
+                          </div>
+                          <i class="fas fa-chevron-right chevron"></i>
+                        </div>
+                        
+                        <div class="menu-item">
+                          <div class="menu-item-content">
+                            <i class="fas fa-question-circle icon"></i>
+                            <span class="label">Bantuan & Dukungan</span>
+                          </div>
+                          <i class="fas fa-chevron-right chevron"></i>
+                        </div>
+                      </div>
+                      
+                      <button id="btn-logout" class="btn btn-logout">
+                        <i class="fas fa-sign-out-alt"></i> Keluar
+                      </button>
+                      
+                      <div class="app-version">Versi 1.0.0</div>
+                    </div>
+                `,
+          detail: `
+                    <div class="app-header detail-header">
+                        <button class="back-btn" data-page="riwayat"><i class="fas fa-arrow-left"></i></button>
+                        <h1>Detail Pengukuran</h1>
+                    </div>
+                    <div id="page-detail" class="page active">
+                        <div class="card detail-info">
+                             <div class="info-item"><div class="label">Pengambilan Pengukuran</div><div class="value">29/06/2025 12:08</div></div>
+                              <div class="info-item"><div class="label">Nama</div><div class="value">Andre</div></div>
+                             <div class="info-item"><div class="label">Otot</div><div class="value">Bicep</div></div>
+                             <div class="info-item"><div class="label">Aktivitas</div><div class="value">Angkat Beban</div></div>
+                        </div>
+                        <div class="card chart-container">
+                            <h3>Grafik EMG</h3>
+                            <img src="https://i.ibb.co/L5w2WjN/emg-chart.png" alt="EMG Chart">
+                        </div>
+                         <div class="card chart-container">
+                            <h3>Grafik IMU</h3>
+                             <img src="https://i.ibb.co/wJHy2dF/imu-chart.png" alt="IMU Chart">
+                        </div>
+                    </div>
+                `,
+        };
+
+        const mainContent = document.getElementById("main-content");
+        const navButtons = document.querySelectorAll(".nav-btn");
+        let chartInterval;
+
+        function createRealtimeChart() {
+          const ctx = document
+            .getElementById("homeRealtimeChart")
+            .getContext("2d");
+          const emgStatusText = document.getElementById("emg-status-text");
+
+          // Gradient untuk area di bawah garis EMG (biru)
+          const emgGradient = ctx.createLinearGradient(0, 0, 0, 220);
+          emgGradient.addColorStop(0, "rgba(33, 150, 243, 0.4)"); // Biru pekat
+          emgGradient.addColorStop(1, "rgba(33, 150, 243, 0.05)"); // Biru transparan
+
+          const chart = new Chart(ctx, {
+            type: "line",
+            data: {
+              labels: Array(30).fill(""),
+              datasets: [
+                {
+                  label: "EMG Signal",
+                  data: Array(30)
+                    .fill(0)
+                    .map(() => Math.random() * 25 + 10),
+                  borderColor: "var(--emg-blue)", // Warna garis EMG (biru)
+                  borderWidth: 2.5,
+                  pointRadius: 0,
+                  tension: 0.4,
+                  fill: false,
+                  backgroundColor: emgGradient,
+                },
+                {
+                  label: "IMU Signal",
+                  data: Array(30)
+                    .fill(0)
+                    .map(() => Math.random() * 20 + 5),
+                  borderColor: "#718096", // Warna garis IMU (merah)
+                  borderWidth: 2,
+                  pointRadius: 0,
+                  tension: 0.4,
+                  fill: true,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: true,
+                  position: "top",
+                  align: "start",
+                  labels: {
+                    boxWidth: 15,
+                    padding: 15,
+                    font: {
+                      family: "'Poppins', sans-serif",
+                      size: 14,
+                    },
+                    usePointStyle: true,
+                  },
+                },
+              },
+              scales: {
+                x: { display: false },
+                y: {
+                  display: true,
+                  beginAtZero: true,
+                  max: 40,
+                  grid: {
+                    drawBorder: false,
+                    color: "rgba(200, 200, 200, 0.2)",
+                  },
+                  ticks: {
+                    display: false,
+                  },
+                },
+              },
+            },
+          });
+
+          chartInterval = setInterval(() => {
+            const emgData = chart.data.datasets[0].data;
+            const newEmgValue = Math.random() * 25 + 10;
+            emgData.shift();
+            emgData.push(newEmgValue);
+
+            const imuData = chart.data.datasets[1].data;
+            imuData.shift();
+            imuData.push(Math.random() * 20 + 5);
+
+            if (newEmgValue < 15) {
+              emgStatusText.textContent = "Lemah";
+              emgStatusText.style.color = "var(--danger-red)";
+            } else {
+              emgStatusText.textContent = "Normal";
+              emgStatusText.style.color = "var(--success-green)";
+            }
+
+            chart.update("quiet");
+          }, 400);
+        }
+
+        function navigate(pageKey) {
+          if (chartInterval) {
+            clearInterval(chartInterval);
+            chartInterval = null;
+          }
+
+          if (!pages[pageKey]) return;
+          mainContent.innerHTML = pages[pageKey];
+
+          if (pageKey === "home") {
+            createRealtimeChart();
+          }
+
+          const backBtn = mainContent.querySelector(".back-btn");
+          if (backBtn) {
+            backBtn.addEventListener("click", () => {
+              navigate("riwayat");
+              navButtons.forEach((btn) => btn.classList.remove("active"));
+              document
+                .querySelector('.nav-btn[data-page="riwayat"]')
+                .classList.add("active");
+            });
+          }
+
+          mainContent.querySelectorAll(".history-item").forEach((item) => {
+            item.addEventListener("click", () => navigate("detail"));
+          });
+        }
+
+        navButtons.forEach((button) => {
+          button.addEventListener("click", () => {
+            navButtons.forEach((btn) => btn.classList.remove("active"));
+            button.classList.add("active");
+            navigate(button.dataset.page);
+          });
+        });
+
+        // Add logout button event listener
+        document.addEventListener('click', (e) => {
+          if (e.target.closest('#btn-logout')) {
+            handleLogout();
+          }
+        });
+
+        // Initialize with home page
+        navigate("home");
+      });
+    </script>
+  </body>
+</html>
