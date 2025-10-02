@@ -4,16 +4,35 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Muscle Tect - Mobile View</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💪</text></svg>">
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="firebase/config.js"></script>
+    
+    <!-- Initialize Firebase -->
+    <script>
+      // Inisialisasi Firebase
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log('🔥 Firebase initializing...');
+        
+        // Test Firestore connection
+        if (typeof testFirestoreConnection === 'function') {
+          testFirestoreConnection();
+        }
+        
+        // Setup auth state listener
+        if (typeof setupAuthStateListener === 'function') {
+          setupAuthStateListener();
+        }
+      });
+    </script>
     <style>
       /* Hide scrollbar for WebKit browsers */
       ::-webkit-scrollbar {
@@ -195,12 +214,12 @@
       /* Grafik */
       .home-chart-container {
         position: relative;
-        height: 220px;
+        height: 250px;
         display: flex;
         flex-direction: column;
       }
       .home-chart-container h3 {
-        margin-bottom: 1rem;
+        margin-bottom: 0rem;
         font-size: 1.2rem;
         flex-shrink: 0;
       }
@@ -233,15 +252,55 @@
       .history-list .history-item {
         align-items: center;
       }
-      
-      .modal-content {
-        background: white;
-        padding: 1.5rem;
+      /* Profil */
+      .profile-header-card {
+        text-align: center;
+        padding: 2rem 1rem;
         border-radius: 12px;
-        width: 90%;
-        max-width: 400px;
-        max-height: 90vh;
-        overflow-y: auto;
+        background: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+      }
+      
+      .profile-avatar {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 1.5rem;
+      }
+      
+      .avatar-container {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        overflow: hidden;
+        position: relative;
+        border: 3px solid #f5f5f5;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      
+      #user-avatar {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+      }
+      
+      .profile-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      
+      .profile-info h2 {
+        font-size: 1.2rem;
+        margin-bottom: 0;
+      }
+      
+      .profile-info p {
+        font-size: 1rem;
+        margin-bottom: 0;
       }
       
       .modal-header {
@@ -317,6 +376,32 @@
         font-size: 1.5rem;
         margin-bottom: 0.25rem;
       }
+      
+      /* Chat Bubble Styles */
+      .chat-bubble {
+        position: fixed;
+        bottom: 90px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        background-color: var(--primary-teal);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        transition: all 0.3s ease;
+        text-decoration: none;
+      }
+      
+      .chat-bubble:hover {
+        transform: scale(1.1);
+        background-color: #00695c;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+      }
     </style>
   </head>
   <body>
@@ -334,9 +419,15 @@
           <button class="nav-btn" data-page="riwayat">
             <i class="fas fa-history"></i><br />Riwayat
           </button>
-          <button class="nav-btn" data-page="akun">
-            <i class="fas fa-user"></i><br />Akun
-          </button>
+          <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
+            <a href="chatbot.html" class="chat-bubble" style="position: absolute; top: -76px; right: -17px; width: 45px; height: 45px; font-size: 25px; background-color: var(--primary-teal);">
+              <i class="fas fa-comment-dots"></i>
+            </a>
+            <button class="nav-btn" data-page="akun">
+              <i class="fas fa-user"></i><br />Akun
+
+            </button>
+          </div>
         </div>
       </nav>
     </div>
@@ -344,37 +435,136 @@
     <script>
       document.addEventListener("DOMContentLoaded", async () => {
         // Check if user is logged in
-        auth.onAuthStateChanged((user) => {
+        auth.onAuthStateChanged(async (user) => {
           if (!user) {
             // User is not logged in, redirect to login page
+            console.log('❌ Tidak ada user yang login, mengarahkan ke halaman login');
             window.location.href = 'login.html';
           } else {
-            // User is logged in, update UI
-            updateUserProfile(user);
+            console.log('✅ User berhasil login:', user.uid);
+            try {
+              // Pastikan data user tersimpan di Firestore
+              await saveUserToFirestore(user);
+              // Update UI dengan data user
+              await updateUserProfile(user);
+            } catch (error) {
+              console.error('Gagal memperbarui profil:', error);
+            }
           }
         });
 
-        // Function to update user profile in the UI
-        function updateUserProfile(user) {
+        // Function to update user profile in the UI with Firestore data
+        async function updateUserProfile(user) {
           const userName = document.getElementById('user-name');
           const userEmail = document.getElementById('user-email');
           const userAvatar = document.getElementById('user-avatar');
           const joinDate = document.getElementById('join-date');
           
-          if (userName) userName.textContent = user.displayName || 'User';
-          if (userEmail) userEmail.textContent = user.email || '';
+          // Set default avatar while loading
           if (userAvatar) {
-            userAvatar.src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=00897b&color=fff&size=100`;
+            userAvatar.src = 'https://ui-avatars.com/api/?name=Loading...&background=00897b&color=fff&size=200';
           }
           
-          // Format and display join date
-          if (joinDate && user.metadata && user.metadata.creationTime) {
-            const date = new Date(user.metadata.creationTime);
-            joinDate.textContent = date.toLocaleDateString('id-ID', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            });
+          // Helper function to load fallback avatars
+          function loadFallbackAvatar(user, userData, userAvatar) {
+            // Try Google photo first if available
+            const googlePhotoURL = user.providerData?.find(p => p.photoURL)?.photoURL;
+            
+            if (googlePhotoURL) {
+              console.log('🔍 Mencoba foto dari Google');
+              const processedURL = googlePhotoURL.includes('googleusercontent.com') 
+                ? googlePhotoURL.replace(/=s\d+(-c)?/, '=s400-c')
+                : googlePhotoURL;
+              
+              userAvatar.src = processedURL;
+              userAvatar.onerror = () => {
+                console.log('❌ Gagal memuat foto Google, menggunakan avatar default');
+                setDefaultAvatar(user, userAvatar);
+              };
+            } else {
+              // If no Google photo, use default avatar
+              setDefaultAvatar(user, userAvatar);
+            }
+          }
+          
+          function setDefaultAvatar(user, userAvatar) {
+            const displayName = user.displayName || user.email?.split('@')[0] || 'User';
+            userAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=00897b&color=fff&size=200`;
+          }
+          
+          try {
+            // Get user data from Firestore
+            console.log('🔄 Mengambil data pengguna dari Firestore...');
+            const userDoc = await firebase.firestore()
+              .collection('users')
+              .doc(user.uid)
+              .get();
+            
+            if (!userDoc.exists) {
+              console.log('❌ Dokumen pengguna tidak ditemukan di Firestore');
+              if (userAvatar) loadFallbackAvatar(user, {}, userAvatar);
+              return;
+            }
+            
+            const userData = userDoc.data();
+            console.log('📥 Data dari Firestore:', userData);
+            
+            // Update UI with Firestore data or fallback to auth data
+            const displayName = userData.displayName || user.displayName || user.email?.split('@')[0] || 'User';
+            const email = userData.email || user.email || '';
+            
+            // Debug log
+            console.log('🔄 Memperbarui UI dengan data:', { displayName, email });
+            
+            // Update name and email
+            if (userName) {
+              userName.textContent = displayName;
+              console.log('✅ Nama diperbarui:', displayName);
+            } else {
+              console.error('❌ Elemen userName tidak ditemukan');
+            }
+            
+            if (userEmail) {
+              userEmail.textContent = email;
+              console.log('✅ Email diperbarui:', email);
+            } else {
+              console.error('❌ Elemen userEmail tidak ditemukan');
+            }
+            
+            // Handle profile picture
+            if (userAvatar) {
+              // Check if we have a custom photo URL in Firestore
+              if (userData.photoURL) {
+                console.log('📸 Menggunakan foto profil dari Firestore');
+                userAvatar.src = userData.photoURL;
+                userAvatar.onerror = () => {
+                  console.log('❌ Gagal memuat foto dari Firestore, mencoba sumber lain...');
+                  loadFallbackAvatar(user, userData, userAvatar);
+                };
+              } else {
+                // If no custom photo in Firestore, try other sources
+                loadFallbackAvatar(user, userData, userAvatar);
+              }
+            }
+            
+            // Format and display join date
+            if (joinDate) {
+              const joinTimestamp = userData.createdAt || user.metadata?.creationTime;
+              if (joinTimestamp) {
+                const date = joinTimestamp.toDate ? joinTimestamp.toDate() : new Date(joinTimestamp);
+                joinDate.textContent = date.toLocaleDateString('id-ID', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                });
+              }
+            }
+            
+          } catch (error) {
+            console.error('❌ Error saat memuat profil:', error);
+            if (userAvatar) {
+              loadFallbackAvatar(user, {}, userAvatar);
+            }
           }
         }
         
@@ -387,7 +577,8 @@
             console.error('Logout Error:', error);
             alert('Gagal logout. Silakan coba lagi.');
           }
-        }
+        };;
+        
         const pages = {
           home: `
                     <div class="app-header"><h1>MUSCLE TECH</h1></div>
@@ -465,14 +656,15 @@
                     <div id="page-akun" class="page active">
                       <div class="card profile-header-card">
                         <div class="profile-avatar">
-                          <img id="user-avatar" src="" alt="Profile" onerror="this.src='https://ui-avatars.com/api/?name=User&background=00897b&color=fff&size=100'">
-                          <button id="edit-avatar" class="btn-edit-avatar">
-                            <i class="fas fa-camera"></i>
-                          </button>
+                          <div class="avatar-container">
+                            <img id="user-avatar" src="" alt="Profile">
+                            <button id="edit-avatar" class="btn-edit-avatar" style="display: none;">
+                              <i class="fas fa-camera"></i>
+                            </button>
+                          </div>
                         </div>
                         <h2 id="user-name">Memuat...</h2>
                         <p id="user-email">memuat...</p>
-                        <p class="member-since">Anggota sejak: <span id="join-date">-</span></p>
                       </div>
                       
                       <div class="card profile-menu">
