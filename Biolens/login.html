@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Biolens - Sign In</title>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+
+    <!-- Bootstrap and Fonts -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --primary-color: #4361ee;
+        --primary-light: #4895ef;
+        --secondary-color: #3f37c9;
+        --success-color: #4bb543;
+        --danger-color: #ff3333;
+        --text-dark: #2b2d42;
+        --text-light: #8d99ae;
+        --bg-light: #f8f9fa;
+        --border-color: #e9ecef;
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      }
+      body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        font-family: "Poppins", sans-serif;
+        padding: 20px;
+      }
+      .auth-container {
+        max-width: 420px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 40px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .auth-header {
+        text-align: center;
+        margin-bottom: 32px;
+      }
+      .auth-header h2 {
+        color: var(--text-dark);
+        font-weight: 700;
+        font-size: 28px;
+        margin-bottom: 8px;
+      }
+      .auth-header p {
+        color: var(--text-light);
+        font-size: 15px;
+        margin: 0;
+      }
+      .form-control {
+        height: 48px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-size: 15px;
+        transition: all 0.3s ease;
+      }
+      .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+      }
+      .btn-google {
+        background-color: #fff;
+        color: #5f6368;
+        border: 1px solid #dadce0;
+        width: 100%;
+        height: 48px;
+        padding: 0 16px;
+        border-radius: 8px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 20px 0 0;
+        transition: all 0.3s ease;
+        font-size: 15px;
+        font-family: "Poppins", sans-serif;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      }
+      .btn-google:hover {
+        background-color: #f8f9fa;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        transform: translateY(-1px);
+      }
+      .btn-google img {
+        width: 20px;
+        height: 20px;
+        margin-right: 12px;
+      }
+      .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 24px 0;
+        color: var(--text-light);
+        font-size: 14px;
+        font-weight: 400;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .divider::before,
+      .divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(
+          to right,
+          transparent,
+          var(--border-color),
+          transparent
+        );
+      }
+      .divider::before {
+        margin-right: 16px;
+      }
+      .divider::after {
+        margin-left: 16px;
+      }
+      .auth-footer {
+        text-align: center;
+        margin-top: 24px;
+        color: var(--text-light);
+        font-size: 14px;
+      }
+      .auth-footer a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        position: relative;
+      }
+      .auth-footer a:hover {
+        color: var(--secondary-color);
+      }
+      .auth-footer a::after {
+        content: "";
+        position: absolute;
+        width: 0;
+        height: 1px;
+        bottom: -2px;
+        left: 0;
+        background-color: var(--primary-color);
+        transition: width 0.3s ease;
+      }
+      .auth-footer a:hover::after {
+        width: 100%;
+      }
+      .form-label {
+        font-weight: 500;
+        margin-bottom: 8px;
+        color: var(--text-dark);
+        font-size: 14px;
+        display: block;
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      .btn-primary {
+        background-color: var(--primary-color);
+        border: none;
+        border-radius: 8px;
+        height: 48px;
+        font-weight: 600;
+        font-size: 15px;
+        width: 100%;
+        transition: all 0.3s ease;
+        text-transform: none;
+        letter-spacing: 0.3px;
+        box-shadow: 0 2px 4px rgba(67, 97, 238, 0.2);
+      }
+      .btn-primary:hover {
+        background-color: var(--secondary-color);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(67, 97, 238, 0.3);
+      }
+      .btn-primary:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 2px rgba(67, 97, 238, 0.2);
+      }
+
+      /* Style untuk tombol toggle password */
+      .toggle-password {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 47px; /* Sesuaikan dengan tinggi input */
+        padding: 0;
+      }
+      
+      .toggle-password .material-icons {
+        font-size: 20px;
+        color: var(--text-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="auth-container">
+        <div class="auth-header">
+          <div class="logo mb-3">
+            <img src="assets/logo.png" alt="Logo" style="max-width: 120px" />
+          </div>
+          <h2>Welcome Back</h2>
+          <p>Sign in to continue to Biolens</p>
+        </div>
+
+        <div
+          id="error-message"
+          class="alert alert-danger d-none"
+          role="alert"
+        ></div>
+
+        <!-- Email/Password Form -->
+        <form id="auth-form">
+          <div id="name-field" class="mb-3 d-none">
+            <label for="name" class="form-label">Full Name</label>
+            <input
+              type="text"
+              class="form-control"
+              id="name"
+              placeholder="Enter your full name"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="form-label">Email Address</label>
+            <input
+              type="email"
+              class="form-control"
+              id="email"
+              placeholder="Enter your email"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <div class="d-flex justify-content-between">
+              <label for="password" class="form-label">Password</label>
+              <a
+                href="#"
+                id="forgot-password-inline"
+                class="text-primary"
+                style="font-size: 13px; font-weight: 500"
+                >Forgot?</a
+              >
+            </div>
+            <div class="input-group">
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                placeholder="••••••••"
+                required
+              />
+              <button
+                class="btn btn-outline-secondary toggle-password"
+                type="button"
+                style="border-color: var(--border-color); display: flex; align-items: center; justify-content: center;"
+              >
+                <i class="material-icons">visibility</i>
+              </button>
+            </div>
+            <small
+              id="password-help"
+              class="form-text text-muted"
+{{ ... }}
+              style="font-size: 12px"
+              >Password must be at least 6 characters</small
+            >
+          </div>
+
+          <button type="submit" id="submit-btn" class="btn btn-primary">
+            Sign In
+          </button>
+        </form>
+
+        <div class="divider">or continue with</div>
+
+        <!-- Google Sign In Button -->
+        <button
+          id="google-signin"
+          class="btn btn-outline-secondary w-100 mb-3"
+          style="border-color: #ddd"
+        >
+          <img
+            src="https://www.google.com/favicon.ico"
+            alt="Google"
+            style="width: 18px; margin-right: 10px"
+          />
+          Continue with Google
+        </button>
+
+        <div class="form-footer text-center mt-4">
+          <p class="text-muted">
+            Don't have an account?
+            <a href="register.html" class="text-primary">Sign up</a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Firebase Config and App Scripts -->
+    <script src="firebase/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // DOM Elements
+      const authForm = document.getElementById("auth-form");
+      const errorMessage = document.getElementById("error-message");
+      const googleSignInBtn = document.getElementById("google-signin");
+      const togglePasswordBtn = document.querySelector(".toggle-password");
+      const passwordInput = document.getElementById("password");
+      const togglePasswordIcon =
+        togglePasswordBtn.querySelector("i.material-icons");
+
+      // Toggle password visibility
+      if (togglePasswordBtn && passwordInput) {
+        togglePasswordBtn.addEventListener("click", function () {
+          const type =
+            passwordInput.getAttribute("type") === "password"
+              ? "text"
+              : "password";
+          passwordInput.setAttribute("type", type);
+
+          // Toggle icon
+          if (type === "password") {
+            togglePasswordIcon.textContent = "visibility";
+            togglePasswordIcon.style.color = "var(--text-light)";
+          } else {
+            togglePasswordIcon.textContent = "visibility_off";
+            togglePasswordIcon.style.color = "var(--primary-color)";
+          }
+        });
+      }
+
+      // Check if elements exist before adding event listeners
+      if (
+        !authForm ||
+        !errorMessage ||
+        !googleSignInBtn ||
+        !togglePasswordBtn ||
+        !passwordInput
+      ) {
+        console.error("Beberapa elemen penting tidak ditemukan di halaman");
+      }
+
+      // Handle form submission
+      if (authForm) {
+        authForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const email = document.getElementById("email").value;
+          const password = document.getElementById("password").value;
+
+          try {
+            // Handle login
+            const userCredential = await firebase
+              .auth()
+              .signInWithEmailAndPassword(email, password);
+            // Redirect to home page after successful login
+            window.location.href = "home.html";
+          } catch (error) {
+            console.error("Authentication Error:", error);
+            // Translate common error messages
+            let errorMessage = error.message;
+            if (
+              error.code === "auth/user-not-found" ||
+              error.code === "auth/wrong-password"
+            ) {
+              errorMessage = "Email atau password salah";
+            } else if (error.code === "auth/too-many-requests") {
+              errorMessage =
+                "Terlalu banyak percobaan. Silakan coba lagi nanti.";
+            } else if (error.code === "auth/invalid-email") {
+              errorMessage = "Format email tidak valid";
+            }
+            showError(errorMessage);
+          }
+        });
+      }
+
+      // Google Sign-In dengan Penyimpanan Firestore
+      if (googleSignInBtn) {
+        googleSignInBtn.addEventListener("click", async (e) => {
+          e.preventDefault();
+
+          const originalBtnContent = googleSignInBtn.innerHTML;
+
+          try {
+            // Set loading state
+            googleSignInBtn.disabled = true;
+            googleSignInBtn.innerHTML =
+              '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Memproses...';
+
+            // Inisialisasi Firebase
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+
+            // Konfigurasi Google provider
+            const provider = new firebase.auth.GoogleAuthProvider();
+            provider.addScope("email");
+            provider.addScope("profile");
+
+            // Lakukan sign in dengan popup
+            console.log("Memulai proses login dengan Google...");
+            const result = await auth.signInWithPopup(provider);
+            const user = result.user;
+
+            if (!user || !user.uid) {
+              throw new Error("Gagal mendapatkan data pengguna dari Google");
+            }
+
+            console.log("User berhasil login:", {
+              uid: user.uid,
+              email: user.email,
+              displayName: user.displayName,
+            });
+
+            // Siapkan data pengguna
+            const userData = {
+              uid: user.uid,
+              email: user.email,
+              displayName: user.displayName || user.email.split("@")[0],
+              photoURL: user.photoURL || "",
+              emailVerified: user.emailVerified,
+              providerId: user.providerData[0]?.providerId || "google.com",
+              lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+              createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            };
+
+            // Tambahkan data provider jika tersedia
+            if (user.providerData && user.providerData.length > 0) {
+              userData.providerData = user.providerData.map((p) => ({
+                providerId: p.providerId,
+                uid: p.uid,
+                displayName: p.displayName,
+                email: p.email,
+                photoURL: p.photoURL,
+              }));
+            }
+
+            // Simpan ke Firestore dengan error handling
+            try {
+              // Pastikan koneksi Firestore berhasil
+              if (!db) {
+                throw new Error("Firestore tidak terinisialisasi dengan benar");
+              }
+
+              // Pastikan collection 'users' ada
+              const collections = await db.listCollections();
+
+              // Buat reference ke dokumen user
+              console.log("Membuat referensi dokumen...");
+              const userRef = db.collection("users").doc(user.uid);
+              console.log("Mencoba menyimpan ke dokumen dengan ID:", user.uid);
+
+              // Cek apakah dokumen sudah ada
+              console.log("Memeriksa apakah dokumen sudah ada...");
+              const doc = await userRef.get({ source: "server" }).catch((e) => {
+                console.error("❌ Gagal memeriksa dokumen:", e);
+                throw e;
+              });
+
+              if (!doc.exists) {
+                // Jika dokumen belum ada, buat yang baru
+                console.log("Membuat dokumen pengguna baru...");
+                await userRef.set({
+                  uid: user.uid,
+                  email: user.email,
+                  displayName: user.displayName || user.email.split("@")[0],
+                  photoURL: user.photoURL || "",
+                  emailVerified: user.emailVerified,
+                  providerId: user.providerData[0]?.providerId || "google.com",
+                  createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                  lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+                  providerData: user.providerData
+                    ? user.providerData.map((p) => ({
+                        providerId: p.providerId,
+                        uid: p.uid,
+                        displayName: p.displayName,
+                        email: p.email,
+                        photoURL: p.photoURL,
+                      }))
+                    : [],
+                });
+                console.log("✅ Dokumen pengguna baru berhasil dibuat");
+              } else {
+                // Jika dokumen sudah ada, update lastLogin
+                console.log("Memperbarui data pengguna yang sudah ada...");
+                await userRef.update({
+                  lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+                  emailVerified: user.emailVerified,
+                  ...(user.photoURL && { photoURL: user.photoURL }),
+                  ...(user.displayName && { displayName: user.displayName }),
+                });
+                console.log("✅ Data pengguna berhasil diperbarui");
+              }
+
+              // Verifikasi data tersimpan
+              const updatedDoc = await userRef.get();
+              console.log("✅ Data yang tersimpan:", updatedDoc.data());
+
+              showError("Berhasil masuk!", "success");
+            } catch (firestoreError) {
+              console.error("❌ Gagal menyimpan ke Firestore:", {
+                error: firestoreError,
+                code: firestoreError.code,
+                message: firestoreError.message,
+                stack: firestoreError.stack,
+              });
+              showError(
+                "Berhasil masuk, tetapi ada masalah saat menyimpan data profil: " +
+                  firestoreError.message,
+                "warning"
+              );
+            }
+
+            // Check if email is verified
+            if (!user.emailVerified) {
+              // If email is not verified, send verification email
+              await user.sendEmailVerification({
+                url: window.location.origin + "/login.html",
+              });
+              showError(
+                "Email verifikasi telah dikirim. Silakan periksa email Anda.",
+                "info"
+              );
+            } else {
+              // Show success message for verified email
+              showError("Berhasil masuk dengan Google!", "success");
+            }
+
+            // Redirect to dashboard after a short delay
+            setTimeout(() => {
+              window.location.href = "index.html";
+            }, 1500);
+          } catch (error) {
+            // Handle different error cases
+            let errorMessage = "Gagal masuk dengan Google";
+            switch (error.code) {
+              case "auth/account-exists-with-different-credential":
+                errorMessage =
+                  "Email ini sudah terdaftar dengan metode login yang berbeda. Silakan gunakan metode login yang sesuai.";
+                break;
+              case "auth/popup-closed-by-user":
+                errorMessage = "Proses login dibatalkan oleh pengguna";
+                break;
+              case "auth/cancelled-popup-request":
+                errorMessage = "Permintaan login dibatalkan";
+                break;
+              case "auth/popup-blocked":
+                errorMessage =
+                  "Popup diblokir oleh browser. Mohon izinkan popup untuk situs ini.";
+                break;
+              default:
+                errorMessage =
+                  error.message || "Terjadi kesalahan saat melakukan login";
+            }
+            showError(errorMessage);
+          } finally {
+            // Reset button state
+            googleSignInBtn.disabled = false;
+            googleSignInBtn.innerHTML = originalBtnContent;
+          }
+        });
+      }
+
+      // Handle forgot password
+      async function handleForgotPassword(e) {
+        e.preventDefault();
+        const email = document.getElementById("email").value || "";
+        const emailToUse = email || prompt("Masukkan alamat email Anda:");
+
+        if (emailToUse) {
+          try {
+            await auth.sendPasswordResetEmail(emailToUse);
+            showError(
+              "Link reset password telah dikirim. Silakan periksa kotak masuk Anda.",
+              "success"
+            );
+          } catch (error) {
+            showError(error.message);
+          }
+        }
+      }
+
+      // Show error/success message
+      function showError(message, type = "error") {
+        const errorDiv = document.getElementById("error-message");
+        if (!errorDiv) return;
+
+        errorDiv.textContent = message;
+        errorDiv.className = `alert alert-${
+          type === "error" ? "danger" : "success"
+        }`;
+        errorDiv.classList.remove("d-none");
+
+        // Auto-hide after 5 seconds
+        if (message) {
+          clearTimeout(window.errorTimeout);
+          window.errorTimeout = setTimeout(() => {
+            errorDiv.classList.add("d-none");
+          }, 5000);
+        }
+
+        // Scroll to error message
+        errorDiv.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+
+      // Add event listeners for forgot password links
+      const forgotPasswordLinks = [
+        document.getElementById("forgot-password"),
+        document.getElementById("forgot-password-inline"),
+      ];
+
+      forgotPasswordLinks.forEach((link) => {
+        if (link) {
+          link.addEventListener("click", handleForgotPassword);
+        }
+      });
+
+      // Check if user is already logged in
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          // User is signed in, redirect to home page
+          window.location.href = "index.html";
+        }
+      });
+    </script>
+  </body>
+</html>
