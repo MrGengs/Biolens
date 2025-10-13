@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BioLens - Database</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        :root {
+            --blue-50: #eff6ff;
+            --blue-100: #dbeafe;
+            --blue-200: #bfdbfe;
+            --blue-300: #93c5fd;
+            --blue-400: #60a5fa;
+            --blue-500: #3b82f6;
+            --blue-600: #2563eb;
+            --blue-700: #1d4ed8;
+            --blue-800: #1e40af;
+            --green-50: #f0fdf4;
+            --green-100: #dcfce7;
+            --green-200: #bbf7d0;
+            --green-300: #86efac;
+            --green-400: #4ade80;
+            --green-500: #22c55e;
+            --green-600: #16a34a;
+            --green-700: #15803d;
+            --yellow-50: #fefce8;
+            --yellow-100: #fef9c3;
+            --yellow-200: #fef08a;
+            --yellow-300: #fde047;
+            --yellow-400: #facc15;
+            --yellow-500: #eab308;
+            --yellow-600: #ca8a04;
+            --yellow-700: #a16207;
+            --orange-50: #fff7ed;
+            --orange-100: #ffedd5;
+            --orange-200: #fed7aa;
+            --orange-300: #fdba74;
+            --orange-400: #fb923c;
+            --orange-500: #f97316;
+            --orange-600: #ea580c;
+            --orange-700: #c2410c;
+            --red-50: #fef2f2;
+            --red-100: #fee2e2;
+            --red-200: #fecaca;
+            --red-300: #fca5a5;
+            --red-400: #f87171;
+            --red-500: #ef4444;
+            --red-600: #dc2626;
+            --red-700: #b91c1c;
+            --red-800: #991b1b;
+            --purple-50: #faf5ff;
+            --purple-100: #f3e8ff;
+            --purple-200: #e9d5ff;
+            --purple-300: #d8b4fe;
+            --purple-400: #c084fc;
+            --purple-500: #a855f7;
+            --purple-600: #9333ea;
+            --purple-700: #7e22ce;
+            --pink-50: #fdf2f8;
+            --pink-100: #fce7f3;
+            --pink-200: #fbcfe8;
+            --pink-300: #f9a8d4;
+            --pink-400: #f472b6;
+            --pink-500: #ec4899;
+            --pink-600: #db2777;
+            --pink-700: #be185d;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        /* Hide scrollbar for all elements */
+        html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-y: auto;
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--blue-50) 0%, var(--gray-100) 100%);
+            color: var(--gray-800);
+        }
+        
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        body::-webkit-scrollbar {
+            display: none;
+            width: 0;
+            height: 0;
+        }
+
+        .container {
+            max-width: 28rem;
+            margin: 0 auto;
+            padding: 0.75rem;
+            padding-bottom: 5rem;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 0.75rem;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--blue-100);
+            margin-bottom: 0.75rem;
+        }
+
+        .header h1 {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--blue-600);
+            line-height: 1.25;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            margin-bottom: 0.125rem;
+        }
+
+        .header p {
+            font-size: 0.625rem;
+            color: var(--gray-500);
+            line-height: 1.25;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--blue-100);
+            padding: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .tab-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.375rem;
+        }
+
+        .tab-btn {
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.625rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            line-height: 1.25;
+        }
+
+        .tab-btn.active {
+            background: var(--blue-600);
+            color: white;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-btn:not(.active) {
+            background: var(--gray-100);
+            color: var(--gray-700);
+        }
+
+        .tab-btn:not(.active):hover {
+            background: var(--gray-200);
+        }
+
+        /* Search Bar */
+        .search-container {
+            background: white;
+            border-radius: 1rem;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 0.5rem;
+            font-size: 0.625rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            border-color: var(--blue-500);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Card Styles */
+        .card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--blue-100);
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+        }
+
+        .card-content {
+            padding: 0.75rem;
+        }
+
+        .card-title {
+            font-size: 0.625rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        /* Badges */
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .badge.critical {
+            background: var(--red-600);
+            color: white;
+        }
+
+        .badge.high {
+            background: var(--orange-500);
+            color: white;
+        }
+
+        .badge.medium {
+            background: var(--yellow-500);
+            color: white;
+        }
+
+        .badge.low {
+            background: var(--green-500);
+            color: white;
+        }
+
+        .badge.gram-positive {
+            background: var(--purple-100);
+            color: var(--purple-700);
+        }
+
+        .badge.gram-negative {
+            background: var(--pink-100);
+            color: var(--pink-700);
+        }
+
+        .badge.aman {
+            background: var(--green-100);
+            color: var(--green-700);
+            border: 1px solid var(--green-300);
+        }
+
+        .badge.warning {
+            background: var(--yellow-100);
+            color: var(--yellow-700);
+            border: 1px solid var(--yellow-300);
+        }
+
+        .badge.bahaya {
+            background: var(--red-100);
+            color: var(--red-700);
+            border: 1px solid var(--red-300);
+        }
+
+        /* Pustaka Section */
+        .specimen-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .specimen-card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--blue-100);
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .specimen-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-color: var(--blue-300);
+            transform: translateY(-2px);
+        }
+
+        .specimen-image {
+            background: var(--gray-200);
+            border-radius: 0.5rem;
+            height: 4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .specimen-image i {
+            font-size: 1.5rem;
+            color: var(--gray-400);
+        }
+
+        .specimen-name {
+            font-size: 0.625rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 0.125rem;
+            line-height: 1.25;
+        }
+
+        .specimen-scientific {
+            font-size: 0.5625rem;
+            color: var(--gray-600);
+            font-style: italic;
+            margin-bottom: 0.375rem;
+            line-height: 1.25;
+        }
+
+        .specimen-badges {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            z-index: 50;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 1rem;
+            max-width: 24rem;
+            width: 100%;
+            padding: 1rem;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .modal-title {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            line-height: 1.25;
+        }
+
+        .modal-subtitle {
+            font-size: 0.625rem;
+            color: var(--gray-600);
+            font-style: italic;
+            line-height: 1.25;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            color: var(--gray-500);
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--gray-700);
+        }
+
+        .modal-image {
+            background: var(--gray-200);
+            border-radius: 0.5rem;
+            height: 6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .modal-image i {
+            font-size: 2.5rem;
+            color: var(--gray-400);
+        }
+
+        .modal-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            font-size: 0.625rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .detail-label {
+            color: var(--gray-600);
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .growth-info {
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .growth-label {
+            color: var(--gray-600);
+            margin-bottom: 0.25rem;
+        }
+
+        .growth-text {
+            color: var(--gray-800);
+            font-size: 0.5625rem;
+        }
+
+        /* Patogen Section */
+        .pathogen-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .pathogen-item {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--blue-100);
+            overflow: hidden;
+        }
+
+        .pathogen-header {
+            padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .pathogen-header:hover {
+            background: var(--gray-50);
+        }
+
+        .pathogen-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .pathogen-icon {
+            font-size: 0.75rem;
+        }
+
+        .pathogen-icon.critical {
+            color: var(--red-600);
+        }
+
+        .pathogen-icon.high {
+            color: var(--orange-500);
+        }
+
+        .pathogen-icon.medium {
+            color: var(--yellow-500);
+        }
+
+        .pathogen-name {
+            font-size: 0.625rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            line-height: 1.25;
+        }
+
+        .pathogen-toggle {
+            font-size: 0.75rem;
+            color: var(--gray-400);
+        }
+
+        .pathogen-content {
+            padding: 0 0.75rem 0.75rem;
+            font-size: 0.625rem;
+        }
+
+        .symptoms-list {
+            list-style-type: disc;
+            list-style-position: inside;
+            margin-top: 0.25rem;
+        }
+
+        .symptoms-list li {
+            color: var(--gray-600);
+            font-size: 0.5625rem;
+            line-height: 1.25;
+            margin-bottom: 0.125rem;
+        }
+
+        .pathogen-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .pathogen-stat {
+            background: var(--gray-50);
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--gray-200);
+        }
+
+        .pathogen-stat.blue {
+            background: var(--blue-50);
+            border-color: var(--blue-200);
+        }
+
+        .stat-label {
+            font-size: 0.5625rem;
+            color: var(--gray-600);
+            margin-bottom: 0.125rem;
+            line-height: 1.25;
+        }
+
+        .stat-value {
+            font-size: 0.625rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            line-height: 1.25;
+        }
+
+        .stat-value.blue {
+            color: var(--blue-800);
+        }
+
+        /* History Section */
+        .stats-summary {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--blue-100);
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .stats-title {
+            font-size: 0.625rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 0.5rem;
+            line-height: 1.25;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.5625rem;
+            color: var(--gray-600);
+            margin-bottom: 0.25rem;
+            line-height: 1.25;
+        }
+
+        .stat-value {
+            font-size: 1.125rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .stat-value.total {
+            color: var(--blue-600);
+        }
+
+        .stat-value.aman {
+            color: var(--green-600);
+        }
+
+        .stat-value.warning {
+            color: var(--yellow-600);
+        }
+
+        .stat-value.bahaya {
+            color: var(--red-600);
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .history-item {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--blue-100);
+            padding: 0.75rem;
+        }
+
+        .history-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .history-image {
+            background: var(--gray-200);
+            border-radius: 0.5rem;
+            width: 3rem;
+            height: 3rem;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .history-image i {
+            font-size: 1rem;
+            color: var(--gray-400);
+        }
+
+        .history-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.25rem;
+        }
+
+        .history-name {
+            font-size: 0.625rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            line-height: 1.25;
+        }
+
+        .history-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-size: 0.5625rem;
+            color: var(--gray-600);
+            margin-bottom: 0.375rem;
+            line-height: 1.25;
+        }
+
+        .history-meta i {
+            font-size: 0.625rem;
+        }
+
+        .history-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-cfu {
+            font-size: 0.5625rem;
+            color: var(--gray-600);
+        }
+
+        .history-cfu span {
+            font-weight: 700;
+            color: var(--gray-800);
+        }
+
+        .history-detail-btn {
+            background: none;
+            border: none;
+            color: var(--blue-600);
+            font-size: 0.5625rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .history-detail-btn:hover {
+            color: var(--blue-700);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            font-size: 0.625rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            line-height: 1.25;
+        }
+
+        .btn-primary {
+            background: var(--blue-600);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--blue-700);
+        }
+
+        .btn i {
+            font-size: 0.875rem;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 2px solid var(--blue-100);
+            box-shadow: 0 -10px 25px -5px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+        }
+
+        .nav-container {
+            max-width: 28rem;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+        }
+
+        .nav-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            padding: 0.5rem 0;
+            transition: all 0.2s;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .nav-btn.active {
+            color: var(--blue-600);
+        }
+
+        .nav-btn:not(.active) {
+            color: var(--gray-400);
+        }
+
+        .nav-btn i {
+            font-size: 1rem;
+            margin-bottom: 0.125rem;
+        }
+
+        .nav-btn.active i {
+            font-weight: 900;
+        }
+
+        .nav-label {
+            font-size: 0.5625rem;
+        }
+
+        .nav-btn.active .nav-label {
+            font-weight: 700;
+        }
+
+        .nav-btn:not(.active) .nav-label {
+            font-weight: 500;
+        }
+
+        .nav-indicator {
+            width: 1.25rem;
+            height: 0.125rem;
+            background: var(--blue-600);
+            border-radius: 0.125rem 0.125rem 0 0;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <i class="fas fa-database"></i>
+                Database
+            </h1>
+            <p>Bio-Lens Data Center</p>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tab-nav">
+            <div class="tab-container">
+                <button class="tab-btn active" data-tab="pustaka">Pustaka</button>
+                <button class="tab-btn" data-tab="patogen">Patogen</button>
+                <button class="tab-btn" data-tab="history">History</button>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-container">
+            <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" id="searchInput" placeholder="Cari pustaka...">
+            </div>
+        </div>
+
+        <!-- PUSTAKA SPESIMEN -->
+        <div id="pustakaSection" class="tab-content">
+            <div class="specimen-grid" id="specimenGrid">
+                <!-- Specimen cards will be generated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- PATOGEN DATABASE -->
+        <div id="patogenSection" class="tab-content" style="display: none;">
+            <div class="pathogen-list" id="pathogenList">
+                <!-- Pathogen items will be generated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- HISTORY -->
+        <div id="historySection" class="tab-content" style="display: none;">
+            <!-- Stats Summary -->
+            <div class="stats-summary">
+                <div class="stats-title">Ringkasan</div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">Total</div>
+                        <div class="stat-value total">23</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Aman</div>
+                        <div class="stat-value aman">17</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Warning</div>
+                        <div class="stat-value warning">3</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Bahaya</div>
+                        <div class="stat-value bahaya">3</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History List -->
+            <div class="history-list" id="historyList">
+                <!-- History items will be generated by JavaScript -->
+            </div>
+
+            <!-- Export Button -->
+            <button class="btn btn-primary" id="exportBtn">
+                <i class="fas fa-download"></i>
+                Export All Data
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="specimenModal" class="modal-overlay" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title" id="modalTitle">E. coli</div>
+                    <div class="modal-subtitle" id="modalSubtitle">Escherichia coli</div>
+                </div>
+                <button class="modal-close" id="modalClose">×</button>
+            </div>
+            
+            <div class="modal-image">
+                <img src="assets/database/E.Coli.jpg" alt="E. Coli" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+
+            <div class="modal-details">
+                <div class="detail-row">
+                    <span class="detail-label">Tingkat Bahaya:</span>
+                    <span class="badge critical" id="modalDanger">CRITICAL</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Gram:</span>
+                    <span class="detail-value" id="modalGram">Negatif (-)</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Bentuk:</span>
+                    <span class="detail-value" id="modalShape">Batang pendek</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Ukuran:</span>
+                    <span class="detail-value" id="modalSize">2-3 μm</span>
+                </div>
+                <div class="growth-info">
+                    <div class="growth-label">Kondisi Pertumbuhan:</div>
+                    <div class="growth-text" id="modalGrowth">Aerob/Anaerob fakultatif, 37°C optimal</div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" id="modalCloseBtn">Tutup</button>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <div class="nav-container">
+            <a href="home.html" class="nav-btn" id="home-btn">
+                <i class="fas fa-home"></i>
+                <span class="nav-label">Home</span>
+            </a>
+            <a href="control.html" class="nav-btn" id="control-btn">
+                <i class="fas fa-sliders-h"></i>
+                <span class="nav-label">Kontrol</span>
+            </a>
+            <a href="analisis.html" class="nav-btn" id="analysis-btn">
+                <i class="fas fa-file-image"></i>
+                <span class="nav-label">Analisis</span>
+            </a>
+            <a href="database.html" class="nav-btn active" id="database-btn">
+                <i class="fas fa-database"></i>
+                <span class="nav-label">Database</span>
+            </a>
+            <a href="profile.html" class="nav-btn" id="profile-btn">
+                <i class="fas fa-user"></i>
+                <span class="nav-label">Profile</span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Data
+        const specimenData = [
+            { 
+                id: 1, 
+                name: 'E. coli', 
+                scientific: 'Escherichia coli', 
+                danger: 'critical', 
+                gram: 'negative', 
+                shape: 'Batang pendek', 
+                size: '2-3 μm', 
+                growth: 'Aerob/Anaerob fakultatif, 37°C optimal' 
+            },
+            { 
+                id: 2, 
+                name: 'S. aureus', 
+                scientific: 'Staphylococcus aureus', 
+                danger: 'medium', 
+                gram: 'positive', 
+                shape: 'Kokus bulat', 
+                size: '0.5-1 μm', 
+                growth: 'Aerob fakultatif, 30-37°C' 
+            },
+            { 
+                id: 3, 
+                name: 'Salmonella', 
+                scientific: 'Salmonella typhi', 
+                danger: 'high', 
+                gram: 'negative', 
+                shape: 'Batang', 
+                size: '2-3 μm', 
+                growth: 'Anaerob fakultatif, 37°C' 
+            },
+            { 
+                id: 4, 
+                name: 'Listeria', 
+                scientific: 'Listeria monocytogenes', 
+                danger: 'critical', 
+                gram: 'positive', 
+                shape: 'Batang pendek', 
+                size: '1-2 μm', 
+                growth: 'Aerob, 4-37°C' 
+            }
+        ];
+
+        const pathogenData = [
+            { 
+                id: 1, 
+                name: 'E. coli O157:H7', 
+                level: 'critical', 
+                symptoms: ['Diare berdarah', 'Kram perut hebat', 'Muntah'], 
+                infectionDose: '10-100 sel', 
+                uvDose: '40 mJ/cm²', 
+                duration: '3-4 menit' 
+            },
+            { 
+                id: 2, 
+                name: 'Salmonella', 
+                level: 'high', 
+                symptoms: ['Demam tinggi', 'Diare', 'Kram perut'], 
+                infectionDose: '1000 sel', 
+                uvDose: '35 mJ/cm²', 
+                duration: '2-3 menit' 
+            },
+            { 
+                id: 3, 
+                name: 'Staphylococcus aureus', 
+                level: 'medium', 
+                symptoms: ['Mual', 'Muntah', 'Kram perut'], 
+                infectionDose: '100,000 sel', 
+                uvDose: '30 mJ/cm²', 
+                duration: '2 menit' 
+            }
+        ];
+
+        const historyData = [
+            { id: 1, food: 'Nasi Goreng', date: '01/10/2025', time: '09:15', status: 'aman', cfu: 0 },
+            { id: 2, food: 'Rendang', date: '01/10/2025', time: '09:00', status: 'warning', cfu: 45 },
+            { id: 3, food: 'Soto Ayam', date: '30/09/2025', time: '16:30', status: 'bahaya', cfu: 245 },
+            { id: 4, food: 'Sayur Asem', date: '30/09/2025', time: '14:20', status: 'aman', cfu: 2 },
+            { id: 5, food: 'Ayam Goreng', date: '30/09/2025', time: '12:00', status: 'warning', cfu: 38 }
+        ];
+
+        // DOM Elements
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const searchInput = document.getElementById('searchInput');
+        const pustakaSection = document.getElementById('pustakaSection');
+        const patogenSection = document.getElementById('patogenSection');
+        const historySection = document.getElementById('historySection');
+        const specimenGrid = document.getElementById('specimenGrid');
+        const pathogenList = document.getElementById('pathogenList');
+        const historyList = document.getElementById('historyList');
+        const specimenModal = document.getElementById('specimenModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalSubtitle = document.getElementById('modalSubtitle');
+        const modalDanger = document.getElementById('modalDanger');
+        const modalGram = document.getElementById('modalGram');
+        const modalShape = document.getElementById('modalShape');
+        const modalSize = document.getElementById('modalSize');
+        const modalGrowth = document.getElementById('modalGrowth');
+        const modalClose = document.getElementById('modalClose');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+        const exportBtn = document.getElementById('exportBtn');
+
+        // Initialize UI
+        function initializeUI() {
+            generateSpecimenGrid();
+            generatePathogenList();
+            generateHistoryList();
+            updateNavigation();
+            setupEventListeners();
+        }
+
+        // Generate specimen grid
+        function generateSpecimenGrid() {
+            specimenGrid.innerHTML = '';
+            
+            specimenData.forEach(specimen => {
+                const specimenCard = document.createElement('div');
+                specimenCard.className = 'specimen-card';
+                specimenCard.dataset.id = specimen.id;
+                
+                // Determine which image to use based on specimen name
+                let imageFile;
+                switch(specimen.name) {
+                    case 'E. coli':
+                        imageFile = 'E.Coli.jpg';
+                        break;
+                    case 'S. aureus':
+                        imageFile = 'S. aureus.jpg';
+                        break;
+                    case 'Salmonella':
+                        imageFile = 'Salmonella.jpg';
+                        break;
+                    case 'Listeria':
+                        imageFile = 'Listeria.jpg';
+                        break;
+                    default:
+                        imageFile = 'default.jpg'; // Fallback image
+                }
+                
+                specimenCard.innerHTML = `
+                    <div class="specimen-image">
+                        <img src="assets/database/${imageFile}" alt="${specimen.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0.5rem;">
+                    </div>
+                    <div class="specimen-name">${specimen.name}</div>
+                    <div class="specimen-scientific">${specimen.scientific}</div>
+                    <div class="specimen-badges">
+                        <span class="badge ${specimen.danger}">${specimen.danger.toUpperCase()}</span>
+                        <span class="badge gram-${specimen.gram}">${specimen.gram === 'positive' ? 'G+' : 'G-'}</span>
+                    </div>
+                `;
+                
+                specimenGrid.appendChild(specimenCard);
+            });
+        }
+
+        // Generate pathogen list
+        function generatePathogenList() {
+            pathogenList.innerHTML = '';
+            
+            pathogenData.forEach(pathogen => {
+                const pathogenItem = document.createElement('div');
+                pathogenItem.className = 'pathogen-item';
+                pathogenItem.dataset.id = pathogen.id;
+                
+                pathogenItem.innerHTML = `
+                    <div class="pathogen-header">
+                        <div class="pathogen-info">
+                            <i class="fas fa-exclamation-triangle pathogen-icon ${pathogen.level}"></i>
+                            <div>
+                                <div class="pathogen-name">${pathogen.name}</div>
+                                <span class="badge ${pathogen.level}">${pathogen.level.toUpperCase()}</span>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-down pathogen-toggle"></i>
+                    </div>
+                    <div class="pathogen-content" style="display: none;">
+                        <div>
+                            <div style="font-weight: 600; color: var(--gray-700); margin-bottom: 0.25rem;">Gejala:</div>
+                            <ul class="symptoms-list">
+                                ${pathogen.symptoms.map(symptom => `<li>${symptom}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div class="pathogen-grid">
+                            <div class="pathogen-stat">
+                                <div class="stat-label">Dosis Infeksi</div>
+                                <div class="stat-value">${pathogen.infectionDose}</div>
+                            </div>
+                            <div class="pathogen-stat blue">
+                                <div class="stat-label" style="color: var(--blue-700);">UV Dose</div>
+                                <div class="stat-value blue">${pathogen.uvDose}</div>
+                            </div>
+                        </div>
+                        <div class="pathogen-stat blue">
+                            <div class="stat-label" style="color: var(--blue-700);">Durasi Treatment</div>
+                            <div class="stat-value blue">${pathogen.duration}</div>
+                        </div>
+                    </div>
+                `;
+                
+                pathogenList.appendChild(pathogenItem);
+            });
+        }
+
+        // Generate history list
+        function generateHistoryList() {
+            historyList.innerHTML = '';
+            
+            historyData.forEach(history => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                
+                historyItem.innerHTML = `
+                    <div class="history-content">
+                        <div class="history-image">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <div class="history-details">
+                            <div class="history-header">
+                                <div class="history-name">${history.food}</div>
+                                <span class="badge ${history.status}">${history.status.toUpperCase()}</span>
+                            </div>
+                            <div class="history-meta">
+                                <i class="fas fa-calendar"></i>
+                                <span>${history.date}</span>
+                                <span>•</span>
+                                <span>${history.time}</span>
+                            </div>
+                            <div class="history-footer">
+                                <div class="history-cfu">CFU: <span>${history.cfu}</span></div>
+                                <button class="history-detail-btn">Detail →</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                historyList.appendChild(historyItem);
+            });
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Tab navigation
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tab = this.dataset.tab;
+                    
+                    // Update active tab button
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show corresponding section
+                    pustakaSection.style.display = tab === 'pustaka' ? 'block' : 'none';
+                    patogenSection.style.display = tab === 'patogen' ? 'block' : 'none';
+                    historySection.style.display = tab === 'history' ? 'block' : 'none';
+                    
+                    // Update search placeholder
+                    searchInput.placeholder = `Cari ${tab}...`;
+                });
+            });
+            
+            // Specimen card click
+            document.addEventListener('click', function(e) {
+                const specimenCard = e.target.closest('.specimen-card');
+                if (specimenCard) {
+                    const specimenId = parseInt(specimenCard.dataset.id);
+                    const specimen = specimenData.find(s => s.id === specimenId);
+                    if (specimen) {
+                        showSpecimenModal(specimen);
+                    }
+                }
+            });
+            
+            // Pathogen header click
+            document.addEventListener('click', function(e) {
+                const pathogenHeader = e.target.closest('.pathogen-header');
+                if (pathogenHeader) {
+                    const pathogenItem = pathogenHeader.parentElement;
+                    const pathogenContent = pathogenItem.querySelector('.pathogen-content');
+                    const pathogenToggle = pathogenItem.querySelector('.pathogen-toggle');
+                    
+                    if (pathogenContent.style.display === 'none') {
+                        pathogenContent.style.display = 'block';
+                        pathogenToggle.classList.remove('fa-chevron-down');
+                        pathogenToggle.classList.add('fa-chevron-up');
+                    } else {
+                        pathogenContent.style.display = 'none';
+                        pathogenToggle.classList.remove('fa-chevron-up');
+                        pathogenToggle.classList.add('fa-chevron-down');
+                    }
+                }
+            });
+            
+            // Modal close
+            modalClose.addEventListener('click', closeModal);
+            modalCloseBtn.addEventListener('click', closeModal);
+            specimenModal.addEventListener('click', function(e) {
+                if (e.target === specimenModal) {
+                    closeModal();
+                }
+            });
+            
+            // Export button
+            exportBtn.addEventListener('click', function() {
+                alert('Mengekspor semua data...');
+            });
+            
+            // Search functionality
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase();
+                filterContent(query);
+            });
+        }
+
+        // Show specimen modal
+        function showSpecimenModal(specimen) {
+            modalTitle.textContent = specimen.name;
+            modalSubtitle.textContent = specimen.scientific;
+            modalDanger.textContent = specimen.danger.toUpperCase();
+            modalDanger.className = `badge ${specimen.danger}`;
+            modalGram.textContent = specimen.gram === 'positive' ? 'Positif (+)' : 'Negatif (-)';
+            modalShape.textContent = specimen.shape;
+            modalSize.textContent = specimen.size;
+            modalGrowth.textContent = specimen.growth;
+            
+            specimenModal.style.display = 'flex';
+        }
+
+        // Close modal
+        function closeModal() {
+            specimenModal.style.display = 'none';
+        }
+
+        // Filter content based on search query
+        function filterContent(query) {
+            const activeTab = document.querySelector('.tab-btn.active').dataset.tab;
+            
+            if (activeTab === 'pustaka') {
+                const cards = document.querySelectorAll('.specimen-card');
+                cards.forEach(card => {
+                    const name = card.querySelector('.specimen-name').textContent.toLowerCase();
+                    const scientific = card.querySelector('.specimen-scientific').textContent.toLowerCase();
+                    const isVisible = name.includes(query) || scientific.includes(query);
+                    card.style.display = isVisible ? 'block' : 'none';
+                });
+            } else if (activeTab === 'patogen') {
+                const items = document.querySelectorAll('.pathogen-item');
+                items.forEach(item => {
+                    const name = item.querySelector('.pathogen-name').textContent.toLowerCase();
+                    const isVisible = name.includes(query);
+                    item.style.display = isVisible ? 'block' : 'none';
+                });
+            } else if (activeTab === 'history') {
+                const items = document.querySelectorAll('.history-item');
+                items.forEach(item => {
+                    const name = item.querySelector('.history-name').textContent.toLowerCase();
+                    const isVisible = name.includes(query);
+                    item.style.display = isVisible ? 'block' : 'none';
+                });
+            }
+        }
+
+        // Update navigation
+        function updateNavigation() {
+            const navButtons = document.querySelectorAll('.nav-btn');
+            navButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    navButtons.forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    this.classList.add('active');
+                });
+            });
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', initializeUI);
+    </script>
+</body>
+</html>

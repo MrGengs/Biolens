@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BioLens - Kontrol Perangkat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        :root {
+            --blue-50: #eff6ff;
+            --blue-100: #dbeafe;
+            --blue-200: #bfdbfe;
+            --blue-300: #93c5fd;
+            --blue-400: #60a5fa;
+            --blue-500: #3b82f6;
+            --blue-600: #2563eb;
+            --blue-700: #1d4ed8;
+            --blue-800: #1e40af;
+            --green-50: #f0fdf4;
+            --green-100: #dcfce7;
+            --green-400: #4ade80;
+            --green-500: #22c55e;
+            --green-600: #16a34a;
+            --green-700: #15803d;
+            --red-50: #fef2f2;
+            --red-100: #fee2e2;
+            --red-400: #f87171;
+            --red-500: #ef4444;
+            --red-600: #dc2626;
+            --red-700: #b91c1c;
+            --red-800: #991b1b;
+            --red-900: #7f1d1d;
+            --amber-50: #fffbeb;
+            --amber-100: #fef3c7;
+            --amber-400: #fbbf24;
+            --amber-500: #f59e0b;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        /* Hide scrollbar for all elements */
+        html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-y: auto;
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--blue-50) 0%, var(--gray-100) 100%);
+            color: var(--gray-800);
+        }
+        
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        body::-webkit-scrollbar {
+            display: none;
+            width: 0;
+            height: 0;
+        }
+
+        .container {
+            max-width: 28rem;
+            margin: 0 auto;
+            padding: 0.75rem;
+            padding-bottom: 5rem;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 0.75rem;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--blue-100);
+            margin-bottom: 0.75rem;
+        }
+
+        .header h1 {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--blue-600);
+            line-height: 1.25;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            margin-bottom: 0.125rem;
+        }
+
+        .header p {
+            font-size: 0.625rem;
+            color: var(--gray-500);
+            line-height: 1.25;
+        }
+
+        /* Card Styles */
+        .card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--blue-100);
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+        }
+
+        .card-header {
+            background: linear-gradient(to right, var(--blue-600), var(--blue-700));
+            padding: 0.75rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 0.625rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        .card-title i {
+            font-size: 0.75rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .status-badge.ready {
+            background: var(--blue-200);
+            color: var(--blue-900);
+        }
+
+        .status-badge.active {
+            background: var(--green-400);
+            color: var(--green-900);
+        }
+
+        .status-badge.stable {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .card-content {
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        /* Grid Layout */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        /* Info Box */
+        .info-box {
+            background: var(--gray-50);
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--gray-200);
+        }
+
+        .info-label {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.5625rem;
+            color: var(--gray-600);
+            line-height: 1.25;
+            margin-bottom: 0.125rem;
+        }
+
+        .info-label i {
+            font-size: 0.5rem;
+        }
+
+        .info-value {
+            font-size: 0.625rem;
+            font-weight: 700;
+            line-height: 1.25;
+        }
+
+        .info-value.locked {
+            color: var(--green-600);
+        }
+
+        .info-value.unlocked {
+            color: var(--red-600);
+        }
+
+        .info-value.timer {
+            font-size: 1rem;
+            color: var(--blue-600);
+            line-height: 1;
+        }
+
+        /* Monitoring Box */
+        .monitoring-box {
+            background: var(--blue-50);
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--blue-200);
+        }
+
+        .monitoring-label {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.5625rem;
+            color: var(--blue-700);
+            line-height: 1.25;
+            margin-bottom: 0.125rem;
+        }
+
+        .monitoring-label i {
+            font-size: 0.5rem;
+        }
+
+        .monitoring-value {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--blue-700);
+            line-height: 1;
+        }
+
+        .monitoring-status {
+            font-size: 0.5rem;
+            color: var(--blue-600);
+            line-height: 1.25;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.5625rem;
+            margin-bottom: 0.125rem;
+        }
+
+        .progress-label {
+            color: var(--gray-600);
+        }
+
+        .progress-value {
+            font-weight: 600;
+            color: var(--blue-600);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 0.375rem;
+            background: var(--gray-200);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--blue-500), var(--blue-600));
+            border-radius: 9999px;
+            transition: width 0.3s;
+        }
+
+        /* Slider */
+        .slider-container {
+            width: 100%;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.5625rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .slider-label {
+            color: var(--gray-700);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .slider-label i {
+            font-size: 0.5rem;
+        }
+
+        .slider-value {
+            font-weight: 700;
+            color: var(--blue-600);
+        }
+
+        .slider {
+            width: 100%;
+            height: 0.375rem;
+            background: var(--gray-200);
+            border-radius: 9999px;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 1rem;
+            height: 1rem;
+            background: var(--blue-600);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .slider:disabled {
+            opacity: 0.5;
+        }
+
+        .slider:disabled::-webkit-slider-thumb {
+            background: var(--gray-400);
+            cursor: not-allowed;
+        }
+
+        .slider-range {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.5rem;
+            color: var(--gray-500);
+            margin-top: 0.125rem;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            font-size: 0.625rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            line-height: 1.25;
+        }
+
+        .btn:disabled {
+            background: var(--gray-300);
+            color: var(--gray-500);
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .btn-start {
+            background: var(--green-600);
+            color: white;
+        }
+
+        .btn-start:hover:not(:disabled) {
+            background: var(--green-700);
+        }
+
+        .btn-stop {
+            background: var(--red-600);
+            color: white;
+        }
+
+        .btn-stop:hover:not(:disabled) {
+            background: var(--red-700);
+        }
+
+        .btn-sos {
+            background: var(--red-900);
+            color: white;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        .btn-sos:hover {
+            background: var(--red-700);
+            transform: scale(1.02);
+            box-shadow: 0 0 15px rgba(220, 38, 38, 0.5);
+        }
+
+        .btn-mode {
+            padding: 0.375rem 0.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 0.625rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            line-height: 1.25;
+        }
+
+        .btn-mode.active {
+            background: var(--blue-600);
+            color: white;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-mode:not(.active) {
+            background: var(--gray-100);
+            color: var(--gray-700);
+        }
+
+        .btn-mode:not(.active):hover {
+            background: var(--gray-200);
+        }
+
+        .btn-action {
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            font-size: 0.625rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.125rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            line-height: 1.25;
+        }
+
+        .btn-action.blue {
+            background: var(--blue-500);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-action.capture-success {
+            background: var(--green-500);
+            transform: scale(0.98);
+        }
+
+        .btn-action.blue:hover {
+            background: var(--blue-700);
+        }
+
+        .btn-action.gray {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+
+        .btn-action.gray:hover {
+            background: var(--gray-300);
+        }
+
+        .btn-action.green {
+            background: var(--green-600);
+            color: white;
+        }
+
+        .btn-action.green:hover {
+            background: var(--green-700);
+        }
+
+        .btn-action i {
+            font-size: 0.75rem;
+        }
+
+        .btn-action .btn-label {
+            font-size: 0.5rem;
+        }
+
+        /* Camera Preview */
+        .camera-preview {
+            background: linear-gradient(135deg, var(--gray-800), var(--gray-900));
+            border-radius: 0.5rem;
+            height: 7rem;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 2px solid var(--blue-200);
+        }
+        
+        .camera-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+            color: var(--gray-400);
+        }
+        
+        .camera-placeholder i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.7;
+        }
+        
+        .camera-placeholder p {
+            margin: 0;
+            font-size: 0.8rem;
+            color: var(--gray-400);
+        }
+
+        .camera-preview i {
+            font-size: 2rem;
+            color: var(--gray-400);
+            opacity: 0.5;
+            z-index: 1;
+        }
+
+        .camera-grid {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            pointer-events: none;
+        }
+
+        .grid-cell {
+            border: 1px solid rgba(96, 165, 250, 0.2);
+        }
+
+        .live-indicator {
+            position: absolute;
+            bottom: 0.25rem;
+            right: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: rgba(34, 197, 94, 0.9);
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            z-index: 2;
+        }
+
+        .live-dot {
+            width: 0.25rem;
+            height: 0.25rem;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        .live-text {
+            font-size: 0.4375rem;
+            color: white;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 2px solid var(--blue-100);
+            box-shadow: 0 -10px 25px -5px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+        }
+
+        .nav-container {
+            max-width: 28rem;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+        }
+
+        .nav-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            padding: 0.5rem 0;
+            transition: all 0.2s;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .nav-btn.active {
+            color: var(--blue-600);
+        }
+
+        .nav-btn:not(.active) {
+            color: var(--gray-400);
+        }
+
+        .nav-btn i {
+            font-size: 1rem;
+            margin-bottom: 0.125rem;
+        }
+
+        .nav-btn.active i {
+            font-weight: 900;
+        }
+
+        .nav-label {
+            font-size: 0.5625rem;
+        }
+
+        .nav-btn.active .nav-label {
+            font-weight: 700;
+        }
+
+        .nav-btn:not(.active) .nav-label {
+            font-weight: 500;
+        }
+
+        .nav-indicator {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <i class="fas fa-sliders-h"></i>
+                Kontrol Perangkat
+            </h1>
+            <p>Control System</p>
+        </div>
+
+        <!-- UV Chamber Card -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-bolt"></i>
+                    UV Chamber
+                </div>
+                <div class="status-badge ready" id="uvStatus">READY</div>
+            </div>
+            <div class="card-content">
+                <!-- Door & Timer -->
+                <div class="grid-2">
+                    <div class="info-box">
+                        <div class="info-label">
+                            <i class="fas fa-lock"></i>
+                            <span>Pintu</span>
+                        </div>
+                        <div class="info-value locked" id="doorStatus">LOCKED</div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-label">Timer</div>
+                        <div class="info-value timer" id="uvTimer">00:00</div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="progress-container">
+                    <div class="progress-header">
+                        <span class="progress-label">Progress</span>
+                        <span class="progress-value" id="uvProgressValue">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="uvProgressFill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Intensity Slider -->
+                <div class="slider-container">
+                    <div class="slider-header">
+                        <span class="slider-label">Intensitas UV</span>
+                        <span class="slider-value" id="uvIntensityValue">85%</span>
+                    </div>
+                    <input type="range" min="0" max="100" value="85" class="slider" id="uvIntensitySlider">
+                </div>
+
+                <!-- Temperature Slider -->
+                <div class="slider-container">
+                    <div class="slider-header">
+                        <span class="slider-label">
+                            <i class="fas fa-thermometer-half"></i>
+                            Suhu
+                        </span>
+                        <span class="slider-value" id="temperatureValue">25°C</span>
+                    </div>
+                    <input type="range" min="0" max="50" value="25" class="slider" id="temperatureSlider">
+                </div>
+
+                <!-- Kelembapan -->
+                <div class="monitoring-box">
+                    <div class="monitoring-label">
+                        <i class="fas fa-tint"></i>
+                        <span>Kelembapan</span>
+                    </div>
+                    <div class="monitoring-value" id="humidityValue">0%</div>
+                    <div class="monitoring-status" id="humidityStatus">Normal</div>
+                </div>
+
+                <!-- Gas Sensors -->
+                <div class="grid-3">
+                    <div class="monitoring-box">
+                        <div class="monitoring-label">
+                            <i class="fas fa-wine-bottle"></i>
+                            <span>Etanol</span>
+                        </div>
+                        <div class="monitoring-value" id="ethanolValue">0ppm</div>
+                        <div class="monitoring-status" id="ethanolStatus">Aman</div>
+                    </div>
+                    <div class="monitoring-box">
+                        <div class="monitoring-label">
+                            <i class="fas fa-wind"></i>
+                            <span>CO₂</span>
+                        </div>
+                        <div class="monitoring-value" id="co2Value">0ppm</div>
+                        <div class="monitoring-status" id="co2Status">Normal</div>
+                    </div>
+                    <div class="monitoring-box">
+                        <div class="monitoring-label">
+                            <i class="fas fa-skull-crossbones"></i>
+                            <span>CO</span>
+                        </div>
+                        <div class="monitoring-value" id="coValue">0ppm</div>
+                        <div class="monitoring-status" id="coStatus">Aman</div>
+                    </div>
+                </div>
+
+                <!-- Monitoring -->
+                <div class="grid-2">
+                    <div class="monitoring-box">
+                        <div class="monitoring-label">
+                            <i class="fas fa-thermometer-half"></i>
+                            <span>Suhu</span>
+                        </div>
+                        <div class="monitoring-value" id="chamberTemp">0°C</div>
+                        <div class="monitoring-status" id="tempStatus">Standby</div>
+                    </div>
+                    <div class="monitoring-box">
+                        <div class="monitoring-label">
+                            <i class="fas fa-power-off"></i>
+                            <span>Daya</span>
+                        </div>
+                        <div class="monitoring-value" id="powerOutput">0W</div>
+                        <div class="monitoring-status" id="powerStatus">Idle</div>
+                    </div>
+                </div>
+
+                <!-- Control Buttons -->
+                <div class="grid-3">
+                    <button class="btn btn-start" id="uvStartBtn">
+                        <span>▶</span>START
+                    </button>
+                    <button class="btn btn-stop" id="uvStopBtn" disabled>
+                        <span>⏹</span>STOP
+                    </button>
+                    <button class="btn btn-sos" id="sosBtn">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        SOS
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Smart Microscope Card -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-camera"></i>
+                    Smart Microscope
+                </div>
+                <div class="status-badge stable">
+                    <i class="fas fa-wave-square"></i>
+                    <span>Stabil</span>
+                </div>
+            </div>
+            <div class="card-content">
+                <!-- Camera Preview -->
+                <div class="camera-preview">
+                    <video id="camera-feed" autoplay playsinline style="display: none;"></video>
+                    <div id="camera-placeholder" class="camera-placeholder">
+                        <i class="fas fa-camera"></i>
+                        <p>Mengakses kamera...</p>
+                    </div>
+                    <div class="camera-grid">
+                        <div class="grid-cell"></div>
+                        <div class="grid-cell"></div>
+                        <div class="grid-cell"></div>
+                        <div class="grid-cell"></div>
+                        <div class="grid-cell"></div>
+                        <div class="grid-cell"></div>
+                        <div class="grid-cell"></div>
+                        <div class="grid-cell"></div>
+                        <div class="grid-cell"></div>
+                    </div>
+                    <div class="live-indicator">
+                        <div class="live-dot"></div>
+                        <span class="live-text">Live</span>
+                    </div>
+                </div>
+
+                <!-- Focus Control -->
+                <div>
+                    <div class="slider-header">
+                        <span class="slider-label">
+                            <i class="fas fa-crosshairs"></i>
+                            Mode Fokus
+                        </span>
+                    </div>
+                    <div class="grid-2" style="margin-bottom: 0.5rem;">
+                        <button class="btn-mode active" id="focusAutoBtn">Auto</button>
+                        <button class="btn-mode" id="focusManualBtn">Manual</button>
+                    </div>
+                    <div id="focusManualControl" style="display: none;">
+                        <div class="slider-header">
+                            <span class="slider-label">Nilai Fokus</span>
+                            <span class="slider-value" id="focusValue">50</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="50" class="slider" id="focusSlider">
+                    </div>
+                </div>
+
+                <!-- Brightness -->
+                <div class="slider-container">
+                    <div class="slider-header">
+                        <span class="slider-label">
+                            <i class="fas fa-sun"></i>
+                            Pencahayaan
+                        </span>
+                        <span class="slider-value" id="brightnessValue">70%</span>
+                    </div>
+                    <input type="range" min="0" max="100" value="70" class="slider" id="brightnessSlider">
+                </div>
+
+                <!-- Zoom -->
+                <div class="slider-container">
+                    <div class="slider-header">
+                        <span class="slider-label">
+                            <i class="fas fa-eye"></i>
+                            Pembesaran
+                        </span>
+                        <span class="slider-value" id="zoomValue">400x</span>
+                    </div>
+                    <input type="range" min="100" max="1000" step="100" value="400" class="slider" id="zoomSlider">
+                    <div class="slider-range">
+                        <span>100x</span>
+                        <span>1000x</span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="grid-3">
+                    <button class="btn-action blue" id="captureBtn">
+                        <i class="fas fa-camera"></i>
+                        <span class="btn-label">Capture</span>
+                    </button>
+                    <button class="btn-action gray" id="aiToggleBtn">
+                        <span>🤖</span>
+                        <span class="btn-label">AI OFF</span>
+                    </button>
+                    <button class="btn-action blue" id="saveBtn">
+                        <span>💾</span>
+                        <span class="btn-label">Save</span>
+                    </button>
+                </div>
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <div class="nav-container">
+            <a href="home.html" class="nav-btn" id="home-btn">
+                <i class="fas fa-home"></i>
+                <span class="nav-label">Home</span>
+            </a>
+            <a href="control.html" class="nav-btn active" id="control-btn">
+                <i class="fas fa-sliders-h"></i>
+                <span class="nav-label">Kontrol</span>
+            </a>
+            <a href="analisis.html" class="nav-btn" id="analysis-btn">
+                <i class="fas fa-file-image"></i>
+                <span class="nav-label">Analisis</span>
+            </a>
+            <a href="database.html" class="nav-btn" id="database-btn">
+                <i class="fas fa-database"></i>
+                <span class="nav-label">Database</span>
+            </a>
+            <a href="profile.html" class="nav-btn" id="profile-btn">
+                <i class="fas fa-user"></i>
+                <span class="nav-label">Profile</span>
+            </a>
+        </div>
+    </nav>
+
+    <script>
+        // State variables
+        let uvStatus = 'ready';
+        let doorLocked = true;
+        let uvTimer = '00:00';
+        let uvProgress = 0;
+        let uvIntensity = 85;
+        let chamberTemp = 25;
+        let powerOutput = 0;
+        let focusMode = 'auto';
+        let focusValue = 50;
+        let brightness = 70;
+        let zoom = 400;
+        let aiEnabled = false;
+        let uvInterval = null;
+
+        // DOM Elements
+        const uvStatusEl = document.getElementById('uvStatus');
+        const doorStatusEl = document.getElementById('doorStatus');
+        const uvTimerEl = document.getElementById('uvTimer');
+        const uvProgressValueEl = document.getElementById('uvProgressValue');
+        const uvProgressFillEl = document.getElementById('uvProgressFill');
+        const uvIntensityValueEl = document.getElementById('uvIntensityValue');
+        const uvIntensitySliderEl = document.getElementById('uvIntensitySlider');
+        const chamberTempEl = document.getElementById('chamberTemp');
+        const tempStatusEl = document.getElementById('tempStatus');
+        const powerOutputEl = document.getElementById('powerOutput');
+        const powerStatusEl = document.getElementById('powerStatus');
+        const uvStartBtn = document.getElementById('uvStartBtn');
+        const uvStopBtn = document.getElementById('uvStopBtn');
+        const sosBtn = document.getElementById('sosBtn');
+        const focusAutoBtn = document.getElementById('focusAutoBtn');
+        const focusManualBtn = document.getElementById('focusManualBtn');
+        const focusManualControl = document.getElementById('focusManualControl');
+        const focusValueEl = document.getElementById('focusValue');
+        const focusSliderEl = document.getElementById('focusSlider');
+        const brightnessValueEl = document.getElementById('brightnessValue');
+        const brightnessSliderEl = document.getElementById('brightnessSlider');
+        const zoomValueEl = document.getElementById('zoomValue');
+        const zoomSliderEl = document.getElementById('zoomSlider');
+        const captureBtn = document.getElementById('captureBtn');
+        const aiToggleBtn = document.getElementById('aiToggleBtn');
+        const saveBtn = document.getElementById('saveBtn');
+
+        // Initialize UI
+        function initializeUI() {
+            updateUVStatus();
+            updateDoorStatus();
+            updateUVIntensity();
+            updateFocusMode();
+            updateBrightness();
+            updateZoom();
+            updateAIStatus();
+        }
+
+        // UV Chamber Functions
+        function updateUVStatus() {
+            uvStatusEl.textContent = uvStatus.toUpperCase();
+            uvStatusEl.className = `status-badge ${uvStatus === 'active' ? 'active' : 'ready'}`;
+            
+            // Update button states
+            uvStartBtn.disabled = uvStatus === 'active' || !doorLocked;
+            uvStopBtn.disabled = uvStatus !== 'active';
+            uvIntensitySliderEl.disabled = uvStatus === 'active';
+        }
+
+        function updateDoorStatus() {
+            doorStatusEl.textContent = doorLocked ? 'LOCKED' : 'UNLOCKED';
+            doorStatusEl.className = `info-value ${doorLocked ? 'locked' : 'unlocked'}`;
+        }
+
+        function updateUVIntensity() {
+            uvIntensityValueEl.textContent = `${uvIntensity}%`;
+            uvIntensitySliderEl.value = uvIntensity;
+        }
+
+        function resetAllValues() {
+            // Reset all monitoring values to 0
+            document.getElementById('humidityValue').textContent = '0%';
+            document.getElementById('ethanolValue').textContent = '0.0ppm';
+            document.getElementById('co2Value').textContent = '0ppm';
+            document.getElementById('coValue').textContent = '0.0ppm';
+            document.getElementById('powerOutput').textContent = '0W';
+            
+            // Reset status indicators
+            document.getElementById('humidityStatus').textContent = 'Normal';
+            document.getElementById('ethanolStatus').textContent = 'Aman';
+            document.getElementById('co2Status').textContent = 'Normal';
+            document.getElementById('coStatus').textContent = 'Aman';
+            document.getElementById('powerStatus').textContent = 'Idle';
+            document.getElementById('tempStatus').textContent = 'Standby';
+            
+            // Reset classes
+            const statusElements = document.querySelectorAll('.monitoring-status, .power-status');
+            statusElements.forEach(el => {
+                el.className = el.className.split(' ')[0]; // Keep only the base class
+            });
+            
+            // Reset chamber temperature and power
+            chamberTemp = 25;
+            powerOutput = 0;
+            updateMonitoring();
+        }
+        
+        function startUVProcess() {
+            if ((uvStatus === 'ready' || uvStatus === 'paused') && doorLocked) {
+                // Stop any existing monitoring and timers
+                if (uvInterval) {
+                    clearInterval(uvInterval);
+                    uvInterval = null;
+                }
+                stopMonitoring();
+                
+                // Reset all UI elements to 0
+                document.getElementById('humidityValue').textContent = '0%';
+                document.getElementById('ethanolValue').textContent = '0.0ppm';
+                document.getElementById('co2Value').textContent = '0ppm';
+                document.getElementById('coValue').textContent = '0.0ppm';
+                document.getElementById('powerOutput').textContent = '0W';
+                
+                // Reset status indicators
+                document.getElementById('humidityStatus').textContent = 'Normal';
+                document.getElementById('ethanolStatus').textContent = 'Aman';
+                document.getElementById('co2Status').textContent = 'Normal';
+                document.getElementById('coStatus').textContent = 'Aman';
+                document.getElementById('powerStatus').textContent = 'Idle';
+                document.getElementById('tempStatus').textContent = 'Standby';
+                
+                // Reset all variables
+                uvStatus = 'active';
+                powerOutput = 0;
+                chamberTemp = 25;
+                uvTimer = '03:30';
+                uvProgress = 0;
+                
+                // Update status indicators to initial state
+                document.getElementById('powerStatus').textContent = 'Normal';
+                document.getElementById('tempStatus').textContent = 'Optimal';
+                document.getElementById('humidityStatus').textContent = 'Normal';
+                document.getElementById('ethanolStatus').textContent = 'Aman';
+                document.getElementById('co2Status').textContent = 'Normal';
+                document.getElementById('coStatus').textContent = 'Aman';
+                
+                // Reset progress bar
+                document.querySelector('.progress-bar').style.width = '0%';
+                
+                // Update UI
+                updateUVStatus();
+                updateMonitoring();
+                updateProgress();
+                
+                // Start monitoring updates with fresh interval
+                startMonitoring();
+                
+                // Start timer simulation
+                if (uvInterval) clearInterval(uvInterval);
+                uvInterval = setInterval(updateUVTimer, 1000);
+                
+                // Force an immediate update of monitoring values
+                updateMonitoringValues();
+            }
+        }
+
+        // Variables to store current state when paused
+        let pausedState = {
+            humidity: 0,
+            ethanol: 0,
+            co2: 0,
+            co: 0,
+            power: 0,
+            temp: 0,
+            timer: '00:00',
+            progress: 0
+        };
+
+        function stopUVProcess() {
+            if (uvStatus === 'active') {
+                // Stop the timer
+                if (uvInterval) {
+                    clearInterval(uvInterval);
+                    uvInterval = null;
+                }
+                
+                // Stop monitoring updates
+                stopMonitoring();
+                
+                // Update status to paused
+                uvStatus = 'paused';
+                
+                // Update UI
+                updateUVStatus();
+            }
+        }
+
+        function updateUVTimer() {
+            // Simple timer simulation
+            const [minutes, seconds] = uvTimer.split(':').map(Number);
+            let totalSeconds = minutes * 60 + seconds - 1;
+            
+            if (totalSeconds <= 0) {
+                stopUVProcess();
+                return;
+            }
+            
+            const newMinutes = Math.floor(totalSeconds / 60);
+            const newSeconds = totalSeconds % 60;
+            uvTimer = `${newMinutes.toString().padStart(2, '0')}:${newSeconds.toString().padStart(2, '0')}`;
+            uvTimerEl.textContent = uvTimer;
+            
+            // Update progress (simulation)
+            if (uvProgress < 100) {
+                uvProgress += 1;
+                updateProgress();
+            }
+        }
+
+        function updateMonitoring() {
+            chamberTempEl.textContent = `${chamberTemp}°C`;
+            tempStatusEl.textContent = chamberTemp > 30 ? 'Optimal' : 'Standby';
+            powerOutputEl.textContent = `${powerOutput}W`;
+            powerStatusEl.textContent = powerOutput > 0 ? 'Active' : 'Idle';
+        }
+
+        function updateProgress() {
+            uvProgressValueEl.textContent = `${uvProgress}%`;
+            uvProgressFillEl.style.width = `${uvProgress}%`;
+        }
+
+        // Microscope Functions
+        function updateFocusMode() {
+            if (focusMode === 'auto') {
+                focusAutoBtn.classList.add('active');
+                focusManualBtn.classList.remove('active');
+                focusManualControl.style.display = 'none';
+            } else {
+                focusAutoBtn.classList.remove('active');
+                focusManualBtn.classList.add('active');
+                focusManualControl.style.display = 'block';
+            }
+        }
+
+        function updateBrightness() {
+            brightnessValueEl.textContent = `${brightness}%`;
+            brightnessSliderEl.value = brightness;
+        }
+
+        function updateZoom() {
+            // Ensure zoom is a multiple of 100 and within the valid range
+            zoom = Math.max(100, Math.min(1000, Math.round(zoom / 100) * 100));
+            zoomValueEl.textContent = `${zoom}x`;
+            zoomSliderEl.value = zoom;
+            
+            // Here you can add any additional zoom-related logic
+            // For example, you might want to adjust the camera zoom or UI elements
+            console.log(`Zoom set to ${zoom}x`);
+        }
+
+        function updateAIStatus() {
+            aiToggleBtn.className = `btn-action ${aiEnabled ? 'green' : 'gray'}`;
+            aiToggleBtn.querySelector('.btn-label').textContent = `AI ${aiEnabled ? 'ON' : 'OFF'}`;
+        }
+
+        // Event Listeners
+        uvStartBtn.addEventListener('click', startUVProcess);
+        uvStopBtn.addEventListener('click', stopUVProcess);
+        sosBtn.addEventListener('click', () => {
+            alert('EMERGENCY STOP ACTIVATED!');
+            stopUVProcess();
+        });
+
+        uvIntensitySliderEl.addEventListener('input', (e) => {
+            uvIntensity = parseInt(e.target.value);
+            updateUVIntensity();
+        });
+
+        focusAutoBtn.addEventListener('click', () => {
+            focusMode = 'auto';
+            updateFocusMode();
+        });
+
+        focusManualBtn.addEventListener('click', () => {
+            focusMode = 'manual';
+            updateFocusMode();
+        });
+
+        focusSliderEl.addEventListener('input', (e) => {
+            focusValue = parseInt(e.target.value);
+            focusValueEl.textContent = focusValue;
+        });
+
+        brightnessSliderEl.addEventListener('input', (e) => {
+            brightness = parseInt(e.target.value);
+            updateBrightness();
+        });
+
+        zoomSliderEl.addEventListener('input', (e) => {
+            // Get the value and round to the nearest 100
+            const value = parseInt(e.target.value);
+            zoom = Math.round(value / 100) * 100;
+            updateZoom();
+            
+            // Update the slider position to snap to the nearest 100
+            zoomSliderEl.value = zoom;
+        });
+
+        captureBtn.addEventListener('click', () => {
+            const video = document.getElementById('camera-feed');
+            const canvas = document.createElement('canvas');
+            
+            // Set canvas dimensions to match video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            // Draw current video frame to canvas
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Convert canvas to image data URL
+            const imageDataUrl = canvas.toDataURL('image/png');
+            
+            // Create a download link
+            const link = document.createElement('a');
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            link.download = `microscope-capture-${timestamp}.png`;
+            link.href = imageDataUrl;
+            
+            // Trigger download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Show success message
+            const originalText = captureBtn.innerHTML;
+            captureBtn.innerHTML = '<i class="fas fa-check"></i><span class="btn-label">Tersimpan!</span>';
+            captureBtn.classList.add('capture-success');
+            
+            // Revert button text after 2 seconds
+            setTimeout(() => {
+                captureBtn.innerHTML = originalText;
+                captureBtn.classList.remove('capture-success');
+            }, 2000);
+        });
+
+        aiToggleBtn.addEventListener('click', () => {
+            aiEnabled = !aiEnabled;
+            updateAIStatus();
+        });
+
+        saveBtn.addEventListener('click', () => {
+            alert('Settings saved successfully!');
+        });
+
+        // Navigation
+        const navButtons = document.querySelectorAll('.nav-btn');
+        navButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                navButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                this.classList.add('active');
+            });
+        });
+
+        // Function to generate random value within a range
+        function getRandomValue(min, max, decimals = 1) {
+            const value = Math.random() * (max - min) + min;
+            return parseFloat(value.toFixed(decimals));
+        }
+
+        // Variables to control monitoring updates
+        let monitoringInterval = null;
+        let isMonitoringPaused = false;
+        
+        // Function to start monitoring updates
+        function startMonitoring() {
+            // Clear any existing interval to prevent duplicates
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+                monitoringInterval = null;
+            }
+            
+            // Reset pause state
+            isMonitoringPaused = false;
+            
+            // Start new monitoring
+            updateMonitoringValues();
+            monitoringInterval = setInterval(updateMonitoringValues, 3000);
+        }
+        
+        // Function to stop monitoring updates
+        function stopMonitoring() {
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+                monitoringInterval = null;
+            }
+            isMonitoringPaused = true;
+        }
+        
+        // Function to pause monitoring (keeps current values but stops updates)
+        function pauseMonitoring() {
+            isMonitoringPaused = true;
+            stopMonitoring();
+        }
+        
+        // Function to resume monitoring
+        function resumeMonitoring() {
+            isMonitoringPaused = false;
+            startMonitoring();
+        }
+        
+        // Function to update monitoring values
+        function updateMonitoringValues() {
+            if (isMonitoringPaused) return;
+            
+            // Update humidity (kelembapan)
+            const humidityValue = document.getElementById('humidityValue');
+            const humidityStatus = document.getElementById('humidityStatus');
+            const humidity = getRandomValue(40, 80);
+            humidityValue.textContent = `${humidity}%`;
+            humidityStatus.textContent = humidity > 70 ? 'Tinggi' : humidity < 50 ? 'Rendah' : 'Normal';
+            humidityStatus.className = 'monitoring-status ' + 
+                (humidity > 70 ? 'status-warning' : humidity < 50 ? 'status-warning' : 'status-ok');
+
+            // Update ethanol (etanol)
+            const ethanolValue = document.getElementById('ethanolValue');
+            const ethanolStatus = document.getElementById('ethanolStatus');
+            const ethanol = getRandomValue(0.1, 2.0, 2);
+            ethanolValue.textContent = `${ethanol}ppm`;
+            ethanolStatus.textContent = ethanol > 1.0 ? 'Tinggi' : 'Aman';
+            ethanolStatus.className = 'monitoring-status ' + (ethanol > 1.0 ? 'status-warning' : 'status-ok');
+
+            // Update CO2
+            const co2Value = document.getElementById('co2Value');
+            const co2Status = document.getElementById('co2Status');
+            const co2 = Math.round(getRandomValue(300, 2000));
+            co2Value.textContent = `${co2}ppm`;
+            co2Status.textContent = co2 > 1000 ? 'Tinggi' : 'Normal';
+            co2Status.className = 'monitoring-status ' + (co2 > 1000 ? 'status-warning' : 'status-ok');
+
+            // Update CO (karbon monoksida)
+            const coValue = document.getElementById('coValue');
+            const coStatus = document.getElementById('coStatus');
+            const co = getRandomValue(0.1, 10, 1);
+            coValue.textContent = `${co}ppm`;
+            coStatus.textContent = co > 5 ? 'Bahaya' : co > 2 ? 'Waspada' : 'Aman';
+            coStatus.className = 'monitoring-status ' + 
+                (co > 5 ? 'status-error' : co > 2 ? 'status-warning' : 'status-ok');
+
+            // Update power (daya)
+            const powerOutput = document.getElementById('powerOutput');
+            const powerStatus = document.getElementById('powerStatus');
+            const power = Math.round(getRandomValue(5, 50));
+            powerOutput.textContent = `${power}W`;
+            powerStatus.textContent = power > 40 ? 'Tinggi' : power < 10 ? 'Rendah' : 'Normal';
+            powerStatus.className = 'power-status ' + 
+                (power > 40 ? 'status-warning' : power < 10 ? 'status-warning' : 'status-ok');
+                
+            // Store current values in case we pause
+            if (uvStatus === 'paused') {
+                pausedState = {
+                    humidity: parseFloat(humidityValue.textContent),
+                    ethanol: parseFloat(ethanolValue.textContent),
+                    co2: parseFloat(co2Value.textContent),
+                    co: parseFloat(coValue.textContent),
+                    power: parseFloat(powerOutput.textContent),
+                    temp: chamberTemp,
+                    timer: uvTimer,
+                    progress: uvProgress,
+                    powerStatus: powerStatus.textContent,
+                    tempStatus: document.getElementById('tempStatus').textContent,
+                    humidityStatus: humidityStatus.textContent,
+                    ethanolStatus: ethanolStatus.textContent,
+                    co2Status: co2Status.textContent,
+                    coStatus: coStatus.textContent
+                };
+            }
+        }
+
+        // Initialize all values to 0
+        function initializeAllValues() {
+            // Reset all monitoring values to 0
+            document.getElementById('humidityValue').textContent = '0%';
+            document.getElementById('ethanolValue').textContent = '0.0ppm';
+            document.getElementById('co2Value').textContent = '0ppm';
+            document.getElementById('coValue').textContent = '0.0ppm';
+            document.getElementById('powerOutput').textContent = '0W';
+            
+            // Reset status indicators
+            document.getElementById('humidityStatus').textContent = 'Normal';
+            document.getElementById('ethanolStatus').textContent = 'Aman';
+            document.getElementById('co2Status').textContent = 'Normal';
+            document.getElementById('coStatus').textContent = 'Aman';
+            document.getElementById('powerStatus').textContent = 'Idle';
+            document.getElementById('tempStatus').textContent = 'Standby';
+            
+            // Reset classes
+            const statusElements = document.querySelectorAll('.monitoring-status, .power-status');
+            statusElements.forEach(el => {
+                el.className = el.className.split(' ')[0]; // Keep only the base class
+            });
+            
+            // Reset all variables
+            chamberTemp = 25;
+            powerOutput = 0;
+            uvStatus = 'ready';
+            uvProgress = 0;
+            uvTimer = '00:00';
+            
+            // Update UI
+            updateMonitoring();
+            updateUVStatus();
+            updateProgress();
+        }
+        
+        // Camera Access
+        async function initCamera() {
+            const video = document.getElementById('camera-feed');
+            const placeholder = document.getElementById('camera-placeholder');
+            
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'environment', // Use back camera by default
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                });
+                
+                video.srcObject = stream;
+                video.style.display = 'block';
+                placeholder.style.display = 'none';
+                
+                // Play the video
+                await video.play();
+                
+            } catch (err) {
+                console.error('Error accessing camera:', err);
+                placeholder.innerHTML = '<i class="fas fa-video-slash"></i><p>Tidak dapat mengakses kamera</p>';
+                placeholder.style.color = 'var(--red-400)';
+            }
+        }
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set all values to 0 on page load
+            initializeAllValues();
+            
+            // Initialize camera
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                initCamera();
+            } else {
+                const placeholder = document.getElementById('camera-placeholder');
+                placeholder.innerHTML = '<i class="fas fa-exclamation-triangle"></i><p>Browser tidak mendukung akses kamera</p>';
+                placeholder.style.color = 'var(--amber-500)';
+            }
+            initializeUI();
+            
+            // Temperature slider functionality
+            const temperatureSlider = document.getElementById('temperatureSlider');
+            const temperatureValue = document.getElementById('temperatureValue');
+            
+            if (temperatureSlider && temperatureValue) {
+                // Update temperature display when slider moves
+                temperatureSlider.addEventListener('input', function() {
+                    temperatureValue.textContent = `${this.value}°C`;
+                });
+                
+                // Initial display
+                temperatureValue.textContent = `${temperatureSlider.value}°C`;
+            }
+
+            // Start monitoring on page load
+            startMonitoring();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BioLens AI Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #1e88e5;
+            --light-blue: #e3f2fd;
+            --dark-blue: #1565c0;
+            --white: #ffffff;
+            --gray: #f5f5f5;
+            --dark-gray: #757575;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-container {
+            max-width: 420px;
+            margin: 0 auto;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--white);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-button {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            background-color: var(--light-blue);
+            background-image: linear-gradient(to bottom, #f8fafc 0%, #e3f2fd 100%);
+            /* Hide scrollbar for Chrome, Safari and Opera */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none;  /* IE and Edge */
+        }
+        
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .chat-messages::-webkit-scrollbar {
+            display: none;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            max-width: 80%;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            line-height: 1.4;
+            position: relative;
+        }
+
+        .bot-message {
+            background-color: var(--white);
+            border-top-left-radius: 0.25rem;
+            border-bottom-right-radius: 1rem;
+            border-top-right-radius: 1rem;
+            border-bottom-left-radius: 0.25rem;
+            align-self: flex-start;
+            margin-right: auto;
+            box-shadow: 0 2px 8px rgba(30, 136, 229, 0.15);
+            border-left: 3px solid var(--primary-blue);
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
+            color: white;
+            border-top-right-radius: 0.25rem;
+            border-bottom-left-radius: 1rem;
+            border-top-left-radius: 1rem;
+            border-bottom-right-radius: 0.25rem;
+            margin-left: auto;
+            box-shadow: 0 2px 8px rgba(30, 136, 229, 0.3);
+            margin-right: 0;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 1rem;
+            background-color: var(--white);
+            border-top: 1px solid #e0e0e0;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 2rem;
+            outline: none;
+            font-size: 1rem;
+            margin-right: 0.5rem;
+        }
+
+        #send-button {
+            background-color: var(--primary-teal);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #send-button:hover {
+            background-color: var(--dark-teal);
+        }
+
+        .typing-indicator {
+            display: none;
+            margin-bottom: 1rem;
+            color: var(--dark-gray);
+            font-style: italic;
+        }
+
+        @media (max-width: 480px) {
+            .chat-container {
+                width: 100%;
+                height: 100vh;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <button class="back-button" onclick="window.history.back()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2>BioLens AI Assistant</h2>
+        </div>
+        
+        <div class="chat-messages" id="chat-messages">
+                Halo! Saya asisten virtual BioLens. Ada yang bisa saya bantu tentang produk BioLens?
+            </div>
+        </div>
+        
+        <div class="typing-indicator" id="typing-indicator">
+            BioLens AI sedang mengetik...
+        </div>
+        
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Ketik pesan Anda..." onkeypress="handleKeyPress(event)">
+            <button id="send-button" onclick="sendMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/gemini/alpha/sdk.js"></script>
+    <script>
+        // Inisialisasi Gemini
+        const GEMINI_API_KEY = 'AIzaSyBKCLB3d6ucJOMjnShtQogMFh6OHVL2Mck';
+        let genai;
+        let model;
+        let chat;
+
+        // Inisialisasi model Gemini
+        async function initGemini() {
+            try {
+                genai = window.google.generativeai;
+                genai.configure({
+                    apiKey: GEMINI_API_KEY
+                });
+                
+                model = genai.getGenerativeModel({ model: "gemini-pro" });
+                chat = model.startChat({
+                    history: [],
+                    generationConfig: {
+                        maxOutputTokens: 1000,
+                    },
+                });
+                
+                return true;
+            } catch (error) {
+                console.error('Error initializing Gemini:', error);
+                return false;
+            }
+        }
+
+        // Inisialisasi konteks obrolan
+        const chatContext = [
+            {
+                role: "system",
+                content: `Anda adalah asisten virtual untuk produk Biolens, perangkat sterilisasi makanan yang menggunakan sinar UV-C. 
+                Biolens dirancang khusus untuk program makanan sekolah di Indonesia dengan tujuan membunuh 99,9% patogen berbahaya pada makanan.
+                
+                Fitur-fitur unggulan Biolens:
+                - Sterilisasi UV-C yang efektif membunuh bakteri dan virus
+                - Pemantauan cerdas berbasis IoT
+                - Desain yang mudah digunakan oleh staf sekolah
+                - Kontrol via aplikasi seluler dengan fitur:
+                  * Dasbor pemantauan status
+                  * Panel kontrol operasi jarak jauh
+                  * Analitik penggunaan
+                
+                Harga: $99 atau Rp1.600.000 per unit dengan diskon untuk pembelian dalam jumlah besar.
+                
+                Anda akan menjawab dengan ramah, informatif, dan membantu dalam bahasa Indonesia. Jika ada pertanyaan di luar topik, jelaskan dengan sopan bahwa Anda hanya bisa membantu terkait produk Biolens.`
+            }
+        ];
+
+        // Fungsi untuk memformat teks dengan berbagai gaya
+        function formatMessage(text) {
+            if (!text) return '';
+            
+            // Urutan penggantian penting untuk menghindari konflik
+            let formatted = text
+                .replace(/\*\*\*([^*]+)\*\*\*/g, '<strong><em>$1</em></strong>') // ***bold italic***
+                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')              // **bold**
+                .replace(/\*([^*]+)\*/g, '<em>$1</em>')                        // *italic*
+                .replace(/_([^_]+)_/g, '<em>$1</em>')                          // _italic_
+                .replace(/~([^~]+)~/g, '<s>$1</s>')                            // ~strikethrough~
+                .replace(/`([^`]+)`/g, '<code>$1</code>')                      // `code`
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>') // [text](url)
+                .replace(/\n/g, '<br>');                                      // New lines
+                
+            return formatted;
+        }
+
+        // Fungsi untuk menambahkan pesan ke chat
+        function addMessage(message, isUser = false) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            
+            // Format teks dengan markdown sederhana
+            messageDiv.innerHTML = formatMessage(message);
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Fungsi untuk memanggil Gemini API
+        async function callGeminiAPI(message) {
+            try {
+                const result = await chat.sendMessage(message);
+                const response = await result.response;
+                return response.text();
+            } catch (error) {
+                console.error('Error calling Gemini API:', error);
+                throw error;
+            }
+        }
+
+        // Fungsi untuk menangani pengiriman pesan
+        async function sendMessage() {
+            const userInput = document.getElementById('user-input');
+            const message = userInput.value.trim();
+            const typingIndicator = document.getElementById('typing-indicator');
+            
+            if (message === '') return;
+            
+            // Tampilkan pesan pengguna (tanpa format markdown)
+            const userMessageDiv = document.createElement('div');
+            userMessageDiv.className = 'message user-message';
+            userMessageDiv.textContent = message;
+            document.getElementById('chat-messages').appendChild(userMessageDiv);
+            userInput.value = '';
+            
+            // Tampilkan indikator mengetik
+            typingIndicator.style.display = 'block';
+            document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
+            
+            try {
+                // Tambahkan pesan pengguna ke konteks
+                chatContext.push({
+                    role: 'user',
+                    content: message
+                });
+                
+                let response;
+                try {
+                    // Coba gunakan Gemini API
+                    response = await callGeminiAPI(message);
+                } catch (error) {
+                    console.error('Error calling Gemini API:', error);
+                    // Fallback ke respons default jika API gagal
+                    response = generateResponse(message);
+                }
+                
+                // Tambahkan respons ke konteks
+                chatContext.push({
+                    role: 'assistant',
+                    content: response
+                });
+                
+                // Tampilkan respons dengan efek mengetik
+                await typeMessage(response);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage('Maaf, terjadi kesalahan. Silakan coba lagi nanti.');
+            } finally {
+                typingIndicator.style.display = 'none';
+            }
+        }
+        // Fungsi untuk menghasilkan respons berdasarkan pesan pengguna
+        function generateResponse(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            if (lowerMessage.includes('apa itu biolens') || lowerMessage.includes('pengertian biolens') || 
+                lowerMessage.includes('jelaskan biolens') || lowerMessage.includes('biolens itu apa')) {
+                return 'BioLens adalah perangkat inovatif untuk sterilisasi makanan menggunakan sinar UV-C yang dirancang khusus untuk program makanan sekolah di Indonesia.\n\n' +
+                      '💡 *Keunggulan Utama*:\n' +
+                      '• Efektif membunuh 99,9% patogen berbahaya\n' +
+                      '• Khusus dirancang untuk kebutuhan sekolah\n' +
+                      '• Memastikan keamanan pangan bagi siswa\n\n' +
+                      'BioLens juga dilengkapi dengan fitur-fitur lain seperti:\n' +
+                      '• Pemantauan cerdas berbasis IoT\n' +
+                      '• Desain ergonomis untuk staf sekolah\n' +
+                      '• Antarmuka yang sederhana dan intuitif\n' +
+                      '• Aplikasi seluler untuk kontrol perangkat dari jarak jauh';
+            }
+            
+            // Respons untuk sapa
+            if (lowerMessage.includes('hallo') || lowerMessage.includes('hai') || lowerMessage.includes('halo')) {
+                return 'Halo! Ada yang bisa saya bantu tentang BioLens hari ini? 😊';
+            }
+            
+            if (lowerMessage.includes('fitur') || lowerMessage.includes('keunggulan')) {
+                return 'BioLens memiliki beberapa fitur unggulan:\n\n' +
+                       '✨ *Sterilisasi UV-C*\n' +
+                       '   - Teknologi UV-C yang aman dan teruji\n\n' +
+                       '📱 *Pemantauan Cerdas*\n' +
+                       '   - Sistem IoT untuk pemantauan real-time\n' +
+                       '   - Notifikasi langsung ke perangkat Anda\n\n' +
+                       '🎯 *Kemudahan Penggunaan*\n' +
+                       '   - Desain ergonomis untuk staf sekolah\n' +
+                       '   - Antarmuka yang sederhana dan intuitif\n\n' +
+                       '📱 *Aplikasi Seluler*\n' +
+                       '   - Kontrol perangkat dari jarak jauh\n' +
+                       '   - Laporan dan analisis penggunaan';
+            }
+            
+            if (lowerMessage.includes('terima kasih') || lowerMessage.includes('makasih')) {
+                return '🙏 Sama-sama! Jika ada pertanyaan lain seputar BioLens, jangan ragu untuk bertanya. Kami siap membantu Anda menciptakan lingkungan makan yang lebih sehat untuk anak-anak sekolah.';
+            } 
+                        return '🤔 Maaf, saya tidak sepenuhnya memahami pertanyaan Anda.\n\n' +
+                  'Saya bisa membantu Anda dengan informasi tentang:\n' +
+                  '• Fitur dan keunggulan produk\n' +
+                  '• Harga dan paket pembelian\n' +
+                  '• Cara pemesanan dan pengiriman\n' +
+                  '• Panduan penggunaan\n\n' +
+                  'Silakan tanyakan apa saja yang ingin Anda ketahui tentang BioLens!';
+        }
+
+        // Fungsi untuk menampilkan pesan dengan efek mengetik
+        async function typeMessage(message) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot-message';
+            chatMessages.appendChild(messageDiv);
+            
+            // Format pesan terlebih dahulu
+            const formattedMessage = formatMessage(message);
+            let displayDiv = document.createElement('div');
+            messageDiv.appendChild(displayDiv);
+            
+            let i = 0;
+            const speed = 10; // Kecepatan mengetik (ms per karakter)
+            
+            return new Promise(resolve => {
+                function typeWriter() {
+                    if (i < formattedMessage.length) {
+                        // Tambahkan karakter per karakter
+                        displayDiv.innerHTML = formattedMessage.substring(0, i + 1);
+                        i++;
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                        setTimeout(typeWriter, speed);
+                    } else {
+                        resolve();
+                    }
+                }
+                typeWriter();
+            });
+        }
+
+        // Fungsi untuk menangani tombol enter
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Inisialisasi chat
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Inisialisasi Gemini
+            const geminiInitialized = await initGemini();
+            if (!geminiInitialized) {
+                console.error('Gagal menginisialisasi Gemini. Menggunakan mode respons default.');
+            }
+            
+            // Fokus ke input pesan saat halaman dimuat
+            document.getElementById('user-input').focus();
+            
+            // Tambahkan event listener untuk tombol kirim
+            document.getElementById('send-button').addEventListener('click', sendMessage);
+            document.getElementById('user-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BioLens - Food Safety Monitoring System</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+    <script src="firebase/config.js"></script>
+    <script src="js/auth.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      /* CSS Reset */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      }
+
+      /* --- Color Palette --- */
+      :root {
+        --primary-50: #f5f3ff;
+        --primary-100: #ede9fe;
+        --primary-500: #8b5cf6;
+        --primary-600: #7c3aed;
+        --primary-700: #6d28d9;
+        --secondary-500: #10b981;
+        --secondary-600: #059669;
+        --green-50: #f0fdf4;
+        --green-100: #dcfce7;
+        --green-600: #16a34a;
+        --green-700: #15803d;
+        --amber-50: #fffbeb;
+        --amber-100: #fef3c7;
+        --amber-600: #d97706;
+        --amber-700: #b45309;
+        --red-50: #fef2f2;
+        --red-100: #fee2e2;
+        --red-500: #ef4444;
+        --red-600: #dc2626;
+        --red-700: #b91c1c;
+        --slate-50: #f8fafc;
+        --slate-100: #f1f5f9;
+        --slate-200: #e2e8f0;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+      }
+
+      /* --- Body & Container --- */
+      html {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow-y: auto;
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+      }
+      
+      /* Hide scrollbar for Chrome, Safari and Opera */
+      body::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+      }
+      
+      body {
+        min-height: 100vh;
+        background-color: var(--slate-50);
+        background-image: radial-gradient(
+            circle at 1px 1px,
+            var(--slate-200) 1px,
+            transparent 0
+          ),
+          radial-gradient(
+            circle at 25px 25px,
+            var(--slate-200) 1px,
+            transparent 0
+          );
+        background-size: 50px 50px;
+        color: var(--gray-800);
+      }
+
+      .container {
+        max-width: 28rem;
+        margin: 0 auto;
+        padding: 1rem;
+        padding-bottom: 6rem; /* Space for bottom nav */
+      }
+
+      /* --- Card Base Style --- */
+      .card {
+        background: white;
+        border-radius: 1.25rem;
+        padding: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+          0 2px 4px -2px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--slate-100);
+        margin-bottom: 1rem;
+      }
+
+      /* --- Header --- */
+      .header {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(10px);
+        border-radius: 1.25rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid var(--primary-100);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+          0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      }
+
+      .header-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+      }
+
+      .logo-container {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .logo {
+        background: linear-gradient(
+          135deg,
+          var(--primary-600),
+          var(--primary-500)
+        );
+        padding: 0.75rem;
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px -3px rgba(124, 58, 237, 0.5);
+      }
+      .logo i {
+        color: white;
+        font-size: 1.25rem;
+      }
+
+      .app-info h1 {
+        font-size: 1.25rem; /* DIUBAH */
+        font-weight: 700;
+        color: var(--gray-900);
+      }
+      .app-info p {
+        font-size: 0.8rem;
+        color: var(--gray-600);
+      } /* DIUBAH */
+
+      .notification-btn {
+        position: relative;
+        padding: 0.5rem;
+        border: none;
+        background: transparent;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .notification-btn:hover {
+        background: var(--slate-100);
+      }
+      .notification-btn i {
+        font-size: 1.125rem;
+        color: var(--gray-600);
+      }
+
+      .notification-badge {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 1.25rem;
+        height: 1.25rem;
+        background: var(--red-500);
+        color: white;
+        font-size: 0.625rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        border: 2px solid white;
+      }
+
+      .date-time {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem; /* DIUBAH */
+        background: var(--primary-50);
+        border-radius: 0.75rem;
+        padding: 0.5rem 0.75rem;
+      }
+      .date-time i {
+        font-size: 0.875rem;
+        color: var(--primary-600);
+      }
+      .date-time span {
+        font-weight: 600;
+        color: var(--gray-700);
+      }
+      .date-time .separator {
+        color: var(--gray-400);
+      }
+
+      /* --- Stats Grid --- */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      /* Main Stats Card */
+      .stats-card {
+        background: linear-gradient(
+          135deg,
+          var(--primary-700),
+          var(--primary-500)
+        );
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 20px -5px rgba(124, 58, 237, 0.4);
+        padding: 1rem;
+        color: white;
+      }
+
+      .stats-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+      }
+      .stats-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        font-weight: 700;
+      } /* DIUBAH */
+      .stats-title i {
+        font-size: 1rem;
+      }
+
+      .realtime-badge {
+        font-size: 0.625rem;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.25rem 0.625rem;
+        border-radius: 9999px;
+        font-weight: 600;
+      }
+
+      .stats-items {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.75rem;
+      }
+
+      .stat-item {
+        text-align: center;
+      }
+      .stat-icon {
+        font-size: 1.5rem;
+        margin-bottom: 0.25rem;
+      }
+      .stat-value {
+        font-size: 1.6rem;
+        font-weight: 700;
+        line-height: 1;
+      } /* DIUBAH */
+      .stat-label {
+        font-size: 0.7rem;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 500;
+      } /* DIUBAH */
+
+      /* Breakdown Status Card */
+      .card-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem; /* DIUBAH */
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 0.75rem;
+      }
+      .card-header i {
+        font-size: 1rem;
+        color: var(--primary-600);
+      }
+
+      .breakdown-items {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+      }
+
+      .breakdown-item {
+        text-align: center;
+        padding: 0.75rem 0.5rem;
+        border-radius: 1rem;
+        border: 1px solid;
+      }
+      .breakdown-item.safe {
+        background: var(--green-50);
+        border-color: var(--green-100);
+      }
+      .breakdown-item.warning {
+        background: var(--amber-50);
+        border-color: var(--amber-100);
+      }
+      .breakdown-item.danger {
+        background: var(--red-50);
+        border-color: var(--red-100);
+      }
+
+      .breakdown-item i {
+        font-size: 1.25rem;
+        margin-bottom: 0.25rem;
+      }
+      .breakdown-item.safe i {
+        color: var(--green-600);
+      }
+      .breakdown-item.warning i {
+        color: var(--amber-600);
+      }
+      .breakdown-item.danger i {
+        color: var(--red-600);
+      }
+
+      .breakdown-value {
+        font-size: 1.3rem;
+        font-weight: 700;
+        line-height: 1;
+        margin-bottom: 0.25rem;
+      } /* DIUBAH */
+      .breakdown-item.safe .breakdown-value {
+        color: var(--green-600);
+      }
+      .breakdown-item.warning .breakdown-value {
+        color: var(--amber-600);
+      }
+      .breakdown-item.danger .breakdown-value {
+        color: var(--red-600);
+      }
+
+      .breakdown-label {
+        font-size: 0.7rem;
+        font-weight: 600;
+        line-height: 1.25;
+      } /* DIUBAH */
+      .breakdown-item.safe .breakdown-label {
+        color: var(--green-700);
+      }
+      .breakdown-item.warning .breakdown-label {
+        color: var(--amber-700);
+      }
+      .breakdown-item.danger .breakdown-label {
+        color: var(--red-700);
+      }
+
+      .breakdown-percentage {
+        font-size: 0.5rem;
+        margin-top: 0.25rem;
+      }
+      .breakdown-item.safe .breakdown-percentage {
+        color: rgba(22, 163, 74, 0.8);
+      }
+      .breakdown-item.warning .breakdown-percentage {
+        color: rgba(217, 119, 6, 0.8);
+      }
+      .breakdown-item.danger .breakdown-percentage {
+        color: rgba(220, 38, 38, 0.8);
+      }
+
+      /* Trend & Alert Section */
+      .trend-alert-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .trend-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 0.75rem;
+      } /* DIUBAH */
+      .trend-chart {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        height: 5rem;
+        gap: 0.25rem;
+      }
+      .trend-bar-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+      }
+      .trend-value {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--primary-600);
+      } /* DIUBAH */
+      .trend-bar {
+        width: 100%;
+        background: linear-gradient(
+          to top,
+          var(--primary-500),
+          var(--primary-100)
+        );
+        border-radius: 0.25rem;
+        transition: all 0.3s;
+      }
+      .trend-bar:hover {
+        filter: brightness(1.1);
+      }
+      .trend-day {
+        font-size: 0.7rem;
+        color: var(--gray-600);
+        font-weight: 500;
+      } /* DIUBAH */
+
+      .alert-mini-card {
+        background: linear-gradient(135deg, var(--red-600), var(--red-500));
+        color: white;
+        border-radius: 1.25rem;
+      }
+      .alert-mini-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+      .alert-mini-header i {
+        font-size: 1rem;
+      }
+      .alert-mini-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+      } /* DIUBAH */
+      .alert-mini-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        align-items: flex-start;
+      }
+      .alert-mini-text {
+        font-size: 0.9rem;
+        font-weight: 600;
+      } /* DIUBAH */
+      .alert-mini-subtext {
+        font-size: 0.7rem;
+        color: rgba(255, 255, 255, 0.9);
+      } /* DIUBAH */
+      .alert-mini-btn {
+        width: auto;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        font-size: 0.625rem;
+        font-weight: 700;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.5rem;
+        margin-top: 0.5rem;
+        transition: all 0.2s;
+        cursor: pointer;
+      }
+      .alert-mini-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      /* Recent Samples */
+      .samples-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+      }
+      .samples-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--gray-900);
+      } /* DIUBAH */
+      .view-all-btn {
+        color: var(--primary-600);
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+      } /* DIUBAH */
+      .view-all-btn:hover {
+        color: var(--primary-700);
+      }
+      .view-all-btn i {
+        font-size: 0.875rem;
+        transition: transform 0.2s;
+      }
+      .view-all-btn:hover i {
+        transform: translateX(0.125rem);
+      }
+
+      .samples-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .sample-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem;
+        border-radius: 1rem;
+        transition: all 0.2s;
+      }
+      .sample-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      }
+      .sample-item.safe {
+        background: var(--green-50);
+      }
+      .sample-item.warning {
+        background: var(--amber-50);
+      }
+      .sample-item.danger {
+        background: var(--red-50);
+      }
+
+      .sample-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex: 1;
+        min-width: 0;
+      }
+      .sample-icon {
+        flex-shrink: 0;
+        font-size: 1.25rem;
+      }
+      .sample-item.safe .sample-icon {
+        color: var(--green-600);
+      }
+      .sample-item.warning .sample-icon {
+        color: var(--amber-600);
+      }
+      .sample-item.danger .sample-icon {
+        color: var(--red-600);
+      }
+
+      .sample-details {
+        flex: 1;
+        min-width: 0;
+      }
+      .sample-name {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      } /* DIUBAH */
+      .sample-cfu {
+        font-size: 0.8rem;
+        color: var(--gray-600);
+      } /* DIUBAH */
+
+      .sample-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-left: 0.5rem;
+      }
+      .sample-time {
+        font-size: 0.8rem;
+        color: var(--gray-500);
+      } /* DIUBAH */
+      .sample-status {
+        padding: 0.25rem 0.625rem;
+        border-radius: 9999px;
+        font-size: 0.7rem;
+        font-weight: 700;
+      } /* DIUBAH */
+      .sample-item.safe .sample-status {
+        background: var(--green-100);
+        color: var(--green-700);
+      }
+      .sample-item.warning .sample-status {
+        background: var(--amber-100);
+        color: var(--amber-700);
+      }
+      .sample-item.danger .sample-status {
+        background: var(--red-100);
+        color: var(--red-700);
+      }
+
+      /* Active Warning Card */
+      .warning-card.card {
+        border: 2px solid var(--red-300);
+      }
+      .warning-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+      .warning-icon {
+        background: var(--red-100);
+        padding: 0.5rem;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .warning-icon i {
+        font-size: 1rem;
+        color: var(--red-600);
+      }
+      .warning-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--red-700);
+      } /* DIUBAH */
+
+      .warning-content {
+        background: var(--red-50);
+        border-radius: 1rem;
+        padding: 0.75rem;
+      }
+      .warning-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+      }
+      .warning-details {
+        flex: 1;
+      }
+      .warning-item {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--red-800);
+      } /* DIUBAH */
+      .warning-desc {
+        font-size: 0.8rem;
+        color: var(--red-700);
+        margin-top: 0.125rem;
+      } /* DIUBAH */
+      .warning-badge {
+        background: var(--red-600);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.5rem;
+        font-size: 0.625rem;
+        font-weight: 700;
+      }
+      .warning-bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .warning-time {
+        font-size: 0.8rem;
+        color: var(--red-600);
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+      } /* DIUBAH */
+      .warning-time i {
+        font-size: 0.875rem;
+      }
+
+      .warning-actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+      .warning-btn {
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.5rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+      } /* DIUBAH */
+      .warning-btn.detail {
+        background: white;
+        border: 1px solid var(--red-300);
+        color: var(--red-600);
+      }
+      .warning-btn.detail:hover {
+        background: var(--red-50);
+      }
+      .warning-btn.process {
+        background: var(--red-600);
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
+      .warning-btn.process:hover {
+        background: var(--red-700);
+      }
+      .warning-btn.process i {
+        font-size: 0.75rem;
+      }
+
+      /* --- Bottom Navigation --- */
+      .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid var(--slate-200);
+        z-index: 50;
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+
+      .nav-container {
+        max-width: 28rem;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-around;
+        padding: 0.5rem;
+      }
+
+      .nav-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        flex: 1;
+        padding: 0.5rem 0;
+        border: none;
+        text-decoration: none;
+        background: transparent;
+        cursor: pointer;
+        position: relative;
+        transition: color 0.2s ease-in-out;
+        color: var(--gray-400);
+      }
+      .nav-btn:hover {
+        color: var(--primary-500);
+      }
+      .nav-btn.active {
+        color: var(--primary-600);
+      }
+
+      .nav-btn i {
+        font-size: 1.25rem;
+        margin-bottom: 0.25rem;
+      }
+      .nav-label {
+        font-size: 0.7rem;
+        font-weight: 500;
+      } /* DIUBAH */
+      .nav-btn.active .nav-label {
+        font-weight: 700;
+      }
+
+      .nav-btn .nav-indicator {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 3.5rem;
+        height: 2rem;
+        background-color: var(--primary-100);
+        border-radius: 9999px;
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.2s ease-in-out;
+      }
+
+      .nav-btn.active .nav-indicator {
+        opacity: 1;
+      }
+
+      /* Floating Chat Bubble */
+      .chat-bubble {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        background-color: #00897b;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        z-index: 1000;
+        transition: all 0.3s ease;
+        border: none;
+        outline: none;
+      }
+
+      .chat-bubble:hover {
+        transform: scale(1.1);
+        background-color: #00695c;
+      }
+
+      .chat-bubble i {
+        color: white;
+        font-size: 24px;
+      }
+
+      .chat-bubble .pulse {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: #00897b;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+        z-index: -1;
+        opacity: 0.5;
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+          opacity: 0.5;
+        }
+        70% {
+          transform: scale(1.5);
+          opacity: 0;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header class="header">
+        <div class="header-top">
+          <div class="logo-container">
+            <div class="logo">
+              <i class="fas fa-microscope"></i>
+            </div>
+            <div class="app-info">
+              <h1>Bio-Lens</h1>
+              <p>Food Safety Monitoring</p>
+            </div>
+          </div>
+          <button class="notification-btn">
+            <i class="fas fa-bell"></i>
+            <span class="notification-badge">3</span>
+          </button>
+        </div>
+        <div class="date-time">
+          <i class="fas fa-calendar"></i>
+          <span>Kamis, 2 Okt 2025</span>
+          <span class="separator">•</span>
+          <i class="fas fa-clock"></i>
+          <span>09:30</span>
+        </div>
+      </header>
+
+      <div class="stats-grid">
+        <div class="stats-card">
+          <div class="stats-header">
+            <div class="stats-title">
+              <i class="fas fa-chart-line"></i>
+              <span>Status Hari Ini</span>
+            </div>
+            <div class="realtime-badge">Real-time</div>
+          </div>
+          <div class="stats-items">
+            <div class="stat-item">
+              <div class="stat-icon">📊</div>
+              <div class="stat-value">23</div>
+              <div class="stat-label">Total Scan</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-icon">⚠️</div>
+              <div class="stat-value">3</div>
+              <div class="stat-label">Kontaminasi</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-icon">✅</div>
+              <div class="stat-value">20</div>
+              <div class="stat-label">Steril</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-icon">📈</div>
+              <div class="stat-value">87%</div>
+              <div class="stat-label">Success Rate</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="breakdown-card card">
+        <div class="card-header">
+          <i class="fas fa-chart-pie"></i>
+          <span>Status Breakdown</span>
+        </div>
+        <div class="breakdown-items">
+          <div class="breakdown-item safe">
+            <i class="fas fa-check-circle"></i>
+            <div class="breakdown-value">17</div>
+            <div class="breakdown-label">AMAN</div>
+            <div class="breakdown-percentage">73.9%</div>
+          </div>
+          <div class="breakdown-item warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <div class="breakdown-value">3</div>
+            <div class="breakdown-label">WARNING</div>
+            <div class="breakdown-percentage">13.0%</div>
+          </div>
+          <div class="breakdown-item danger">
+            <i class="fas fa-times-circle"></i>
+            <div class="breakdown-value">3</div>
+            <div class="breakdown-label">BAHAYA</div>
+            <div class="breakdown-percentage">13.0%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="trend-alert-grid">
+        <div class="trend-card card">
+          <div class="trend-title">7-Day Trend</div>
+          <div class="trend-chart"></div>
+        </div>
+        <div class="alert-mini-card card">
+          <div class="alert-mini-header">
+            <i class="fas fa-exclamation-triangle"></i>
+            <div class="alert-mini-title">Alert</div>
+          </div>
+          <div class="alert-mini-content">
+            <div class="alert-mini-text">3 Kontaminasi</div>
+            <div class="alert-mini-subtext">Terdeteksi hari ini</div>
+            <button class="alert-mini-btn">Lihat Detail</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="samples-card card">
+        <div class="samples-header">
+          <div class="samples-title">Sampel Terbaru</div>
+          <button class="view-all-btn">
+            <span>Lihat Semua</span>
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        <div class="samples-list"></div>
+      </div>
+
+      <div class="warning-card card">
+        <div class="warning-header">
+          <div class="warning-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <div class="warning-title">Peringatan Aktif</div>
+        </div>
+        <div class="warning-content">
+          <div class="warning-top">
+            <div class="warning-details">
+              <div class="warning-item">Nasi Goreng - Dapur A</div>
+              <div class="warning-desc">E. coli contamination (245 CFU/ml)</div>
+            </div>
+            <div class="warning-badge">URGENT</div>
+          </div>
+          <div class="warning-bottom">
+            <div class="warning-time">
+              <i class="fas fa-clock"></i>
+              <span>5 menit lalu</span>
+            </div>
+            <div class="warning-actions">
+              <button class="warning-btn detail">Detail</button>
+              <button class="warning-btn process">
+                <i class="fas fa-bolt"></i>
+                <span>Proses</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="bottom-nav">
+      <div class="nav-container">
+        <a href="home.html" class="nav-btn active" id="home-btn">
+          <span class="nav-indicator"></span>
+          <i class="fas fa-home"></i>
+          <span class="nav-label">Home</span>
+        </a>
+        <a href="control.html" class="nav-btn" id="control-btn">
+          <span class="nav-indicator"></span>
+          <i class="fas fa-sliders-h"></i>
+          <span class="nav-label">Kontrol</span>
+        </a>
+        <a href="analysis.html" class="nav-btn" id="analysis-btn">
+          <span class="nav-indicator"></span>
+          <i class="fas fa-file-image"></i>
+          <span class="nav-label">Analisis</span>
+        </a>
+        <a href="database.html" class="nav-btn" id="database-btn">
+          <span class="nav-indicator"></span>
+          <i class="fas fa-database"></i>
+          <span class="nav-label">Database</span>
+        </a>
+        <a href="profile.html" class="nav-btn" id="profile-btn">
+          <span class="nav-indicator"></span>
+          <i class="fas fa-user"></i>
+          <span class="nav-label">Profile</span>
+        </a>
+      </div>
+    </nav>
+    <script>
+      // Chat bubble click handler
+      document.addEventListener("DOMContentLoaded", function () {
+        const chatBubble = document.getElementById("chatBubble");
+        if (chatBubble) {
+          chatBubble.addEventListener("click", function () {
+            window.location.href = "chatbot.html";
+          });
+        }
+      });
+
+      // Data for the application
+      const trendData = [18, 22, 25, 21, 19, 15, 23];
+      const days = ["S", "S", "R", "K", "J", "S", "M"];
+      const maxTrend = Math.max(...trendData);
+
+      // Generate trend chart bars
+      function generateTrendChart() {
+        const trendChart = document.querySelector(".trend-chart");
+        trendChart.innerHTML = ""; // Clear existing bars
+        trendData.forEach((value, index) => {
+          const barContainer = document.createElement("div");
+          barContainer.className = "trend-bar-container";
+
+          const valueElement = document.createElement("div");
+          valueElement.className = "trend-value";
+          valueElement.textContent = value;
+
+          const barElement = document.createElement("div");
+          barElement.className = "trend-bar";
+          barElement.style.height = `${(value / maxTrend) * 100}%`;
+
+          const dayElement = document.createElement("div");
+          dayElement.className = "trend-day";
+          dayElement.textContent = days[index];
+
+          barContainer.appendChild(valueElement);
+          barContainer.appendChild(barElement);
+          barContainer.appendChild(dayElement);
+
+          trendChart.appendChild(barContainer);
+        });
+      }
+
+      // Generate sample items
+      function generateSampleItems() {
+        const samplesList = document.querySelector(".samples-list");
+        if (!samplesList) return; // Exit if element not found
+        
+        const sampleData = [
+          { name: "Nasi Goreng Spesial", status: "safe", cfu: 0, time: "09:15" },
+          { name: "Rendang Daging Sapi", status: "warning", cfu: 45, time: "09:10" },
+          { name: "Soto Ayam Lamongan", status: "danger", cfu: 245, time: "09:00" },
+          { name: "Gado-gado", status: "safe", cfu: 12, time: "08:45" },
+          { name: "Sate Ayam", status: "safe", cfu: 8, time: "08:30" }
+        ];
+        
+        samplesList.innerHTML = ""; // Clear existing items
+        
+        sampleData.forEach((sample) => {
+          const sampleItem = document.createElement("div");
+          sampleItem.className = `sample-item ${sample.status}`;
+
+          sampleItem.innerHTML = `
+            <div class="sample-info">
+                <div class="sample-icon">
+                    <i class="fas ${
+                      sample.status === "safe"
+                        ? "fa-check-circle"
+                        : sample.status === "warning"
+                        ? "fa-exclamation-triangle"
+                        : "fa-times-circle"
+                    }"></i>
+                </div>
+                <div class="sample-details">
+                    <div class="sample-name">${sample.name}</div>
+                    <div class="sample-cfu">${sample.cfu ? sample.cfu + ' CFU/ml' : 'Aman'}</div>
+                </div>
+            </div>
+            <div class="sample-meta">
+                <div class="sample-time">${sample.time}</div>
+                <div class="sample-status">${sample.status.toUpperCase()}</div>
+            </div>
+          `;
+          samplesList.appendChild(sampleItem);
+        });
+      }
+
+      // Initialize the application
+      // Handle logout
+      function handleLogout() {
+        firebase
+          .auth()
+          .signOut()
+          .then(() => {
+            window.location.href = "login.html";
+          })
+          .catch((error) => {
+            console.error("Logout Error:", error);
+          });
+      }
+
+      // Initialize the application
+      document.addEventListener("DOMContentLoaded", function () {
+        // Check authentication state
+        firebase.auth().onAuthStateChanged((user) => {
+          if (!user) {
+            window.location.href = "login.html";
+            return;
+          }
+
+          // User is signed in, load the app
+          generateTrendChart();
+          generateSampleItems();
+
+          // Update user info in the UI
+          if (user.displayName) {
+            const userNameElement = document.querySelector(".user-name");
+            if (userNameElement) {
+              userNameElement.textContent = user.displayName;
+            }
+          }
+
+          // Add logout functionality
+          const logoutBtn = document.getElementById("logout-btn");
+          if (logoutBtn) {
+            logoutBtn.addEventListener("click", handleLogout);
+          }
+        });
+
+        // Add click handlers for navigation
+        const navButtons = document.querySelectorAll(".nav-btn");
+        navButtons.forEach((button) => {
+          button.addEventListener("click", function () {
+            navButtons.forEach((btn) => btn.classList.remove("active"));
+            this.classList.add("active");
+          });
+        });
+
+        // Add click handlers for various buttons
+        document
+          .querySelector(".view-all-btn")
+          .addEventListener("click", () =>
+            alert("Menampilkan semua sampel...")
+          );
+        document
+          .querySelector(".alert-mini-btn")
+          .addEventListener("click", () => alert("Membuka detail alert..."));
+        document
+          .querySelector(".warning-btn.detail")
+          .addEventListener("click", () =>
+            alert("Membuka detail peringatan...")
+          );
+        document
+          .querySelector(".warning-btn.process")
+          .addEventListener("click", () => alert("Memproses peringatan..."));
+        document
+          .querySelector(".notification-btn")
+          .addEventListener("click", () => alert("Menampilkan notifikasi..."));
+      });
+    </script>
+
+    <!-- Chatbot Container -->
+    <div class="chatbot-container" id="chatbotContainer">
+      <div class="chatbot-header">
+        <div class="chatbot-title">
+          <i class="fas fa-robot"></i>
+          <span>BioLens Assistant</span>
+        </div>
+        <button class="chatbot-close" id="chatbotClose">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="chatbot-messages" id="chatbotMessages">
+        <div class="chatbot-message bot">
+          <div class="message-content">
+            Halo! Saya asisten BioLens. Ada yang bisa saya bantu?
+          </div>
+          <div class="message-time">Baru saja</div>
+        </div>
+      </div>
+      <div class="chatbot-input">
+        <input
+          type="text"
+          id="chatbotInput"
+          placeholder="Ketik pesan Anda..."
+        />
+        <button id="chatbotSend">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Chatbot Toggle Button -->
+    <a href="chatbot.html" class="chatbot-toggle" id="chatbotToggle">
+      <i class="fas fa-comment-dots"></i>
+    </a>
+
+    <style>
+      /* Chatbot Styles */
+      .chatbot-toggle {
+        position: fixed;
+        bottom: 5.5rem;
+        right: 1.5rem;
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 50%;
+        text-decoration: none;
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: white;
+        border: none;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        z-index: 1000;
+        transition: all 0.3s ease;
+      }
+
+      .chatbot-toggle:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
+      }
+
+      .chatbot-container {
+        position: fixed;
+        bottom: 6rem;
+        right: 1.5rem;
+        width: 320px;
+        height: 500px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        z-index: 1001;
+        transform: translateY(20px);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+      }
+
+      .chatbot-container.active {
+        transform: translateY(0);
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .chatbot-header {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: white;
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .chatbot-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        font-size: 1rem;
+      }
+
+      .chatbot-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.25rem;
+        cursor: pointer;
+        padding: 0.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+      }
+
+      .chatbot-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .chatbot-messages {
+        flex: 1;
+        padding: 1rem;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .chatbot-message {
+        max-width: 80%;
+        padding: 0.75rem 1rem;
+        border-radius: 1rem;
+        font-size: 0.875rem;
+        line-height: 1.4;
+        position: relative;
+      }
+
+      .chatbot-message.bot {
+        background: #f3f4f6;
+        color: #1f2937;
+        align-self: flex-start;
+        border-bottom-left-radius: 0.25rem;
+      }
+
+      .chatbot-message.user {
+        background: #8b5cf6;
+        color: white;
+        align-self: flex-end;
+        border-bottom-right-radius: 0.25rem;
+      }
+
+      .message-time {
+        font-size: 0.65rem;
+        opacity: 0.7;
+        margin-top: 0.25rem;
+        text-align: right;
+      }
+
+      .chatbot-input {
+        display: flex;
+        padding: 1rem;
+        border-top: 1px solid #e5e7eb;
+        background: white;
+      }
+
+      .chatbot-input input {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 2rem;
+        font-size: 0.875rem;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+
+      .chatbot-input input:focus {
+        border-color: #8b5cf6;
+      }
+
+      .chatbot-input button {
+        margin-left: 0.5rem;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: #8b5cf6;
+        color: white;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .chatbot-input button:hover {
+        background: #7c3aed;
+      }
+    </style>
+
+    <script>
+      // Chatbot redirect functionality
+      document.addEventListener("DOMContentLoaded", function () {
+        const chatbotToggle = document.getElementById("chatbotToggle");
+
+        // Remove the inline chat container since we're redirecting to chatbot.html
+        const chatbotContainer = document.getElementById("chatbotContainer");
+        if (chatbotContainer) {
+          chatbotContainer.remove();
+        }
+
+        // Add click handler to ensure proper navigation
+        if (chatbotToggle) {
+          chatbotToggle.addEventListener("click", function (e) {
+            e.preventDefault();
+            window.location.href = "chatbot.html";
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
