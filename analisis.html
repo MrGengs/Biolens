@@ -300,6 +300,12 @@
             color: var(--gray-400);
         }
 
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
         .reset-btn {
             position: absolute;
             top: 0.25rem;
@@ -867,6 +873,9 @@
                     <div class="upload-subtext">atau drag & drop disini</div>
                 </div>
                 
+                <!-- Hidden file input -->
+                <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                
                 <div class="grid-2">
                     <button class="btn btn-primary" id="uploadBtn">
                         <i class="fas fa-upload"></i>
@@ -883,7 +892,7 @@
         <!-- Image Preview -->
         <div id="imagePreview" class="card" style="display: none;">
             <div class="card-content">
-                <div class="image-preview">
+                <div class="image-preview" id="previewContainer">
                     <i class="fas fa-file-image"></i>
                     <button class="reset-btn" id="resetBtn">
                         <i class="fas fa-redo"></i>
@@ -1049,13 +1058,68 @@
     
     </div>
 
+    <!-- Modal Kamera -->
+    <div id="cameraModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 1rem; padding: 1rem; max-width: 28rem; width: calc(100% - 2rem); box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 0.875rem; font-weight: 700; color: var(--gray-800);">Ambil Foto</h3>
+                <button id="closeCameraBtn" style="background: none; border: none; font-size: 1.25rem; cursor: pointer; color: var(--gray-600);">×</button>
+            </div>
+            
+            <!-- Video Preview -->
+            <div style="position: relative; border-radius: 0.5rem; overflow: hidden; background: var(--gray-900); margin-bottom: 1rem;">
+                <video id="cameraVideo" autoplay playsinline style="width: 100%; height: 16rem; object-fit: cover;"></video>
+                <canvas id="cameraCanvas" style="display: none;"></canvas>
+            </div>
+            
+            <!-- Camera Controls -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                <button id="switchCameraBtn" class="btn btn-secondary" style="width: 100%;">
+                    <i class="fas fa-sync-alt"></i>
+                    Putar Kamera
+                </button>
+                <button id="capturePhotoBtn" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-camera"></i>
+                    Ambil Foto
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Input Nama Makanan -->
+    <div id="foodNameModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 1rem; padding: 1.5rem; max-width: 20rem; width: calc(100% - 2rem); box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+            <h3 style="font-size: 0.875rem; font-weight: 700; color: var(--gray-800); margin-bottom: 1rem;">Simpan Hasil Analisis</h3>
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-size: 0.625rem; font-weight: 600; color: var(--gray-700); margin-bottom: 0.25rem;">Nama Makanan</label>
+                <input type="text" id="foodNameInput" placeholder="Masukkan nama makanan..." style="width: 100%; padding: 0.5rem; border: 2px solid var(--gray-300); border-radius: 0.5rem; font-size: 0.6875rem; outline: none;">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                <button id="cancelSaveBtn" class="btn btn-secondary" style="width: 100%;">Batal</button>
+                <button id="confirmSaveBtn" class="btn btn-primary" style="width: 100%;">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-storage-compat.js"></script>
+    <script src="firebase/config.js"></script>
+
     <script>
         // State variables
         let selectedImage = null;
+        let imageDataURL = null; // Menyimpan base64 image untuk disimpan ke Firestore
         let isAnalyzing = false;
         let analysisComplete = false;
         let progress = 0;
         let progressInterval = null;
+        
+        // Camera variables
+        let cameraStream = null;
+        let currentFacingMode = 'environment'; // 'user' untuk front, 'environment' untuk back
 
         // Result data
         const resultData = {
@@ -1093,7 +1157,9 @@
         const uploadArea = document.getElementById('uploadArea');
         const uploadBtn = document.getElementById('uploadBtn');
         const cameraBtn = document.getElementById('cameraBtn');
+        const fileInput = document.getElementById('fileInput');
         const imagePreview = document.getElementById('imagePreview');
+        const previewContainer = document.getElementById('previewContainer');
         const resetBtn = document.getElementById('resetBtn');
         const analyzeBtn = document.getElementById('analyzeBtn');
         const processingSection = document.getElementById('processingSection');
@@ -1114,6 +1180,20 @@
         const exportBtn = document.getElementById('exportBtn');
         const saveBtn = document.getElementById('saveBtn');
         const restartBtn = document.getElementById('restartBtn');
+        
+        // Camera modal elements
+        const cameraModal = document.getElementById('cameraModal');
+        const cameraVideo = document.getElementById('cameraVideo');
+        const cameraCanvas = document.getElementById('cameraCanvas');
+        const closeCameraBtn = document.getElementById('closeCameraBtn');
+        const switchCameraBtn = document.getElementById('switchCameraBtn');
+        const capturePhotoBtn = document.getElementById('capturePhotoBtn');
+        
+        // Modal elements
+        const foodNameModal = document.getElementById('foodNameModal');
+        const foodNameInput = document.getElementById('foodNameInput');
+        const cancelSaveBtn = document.getElementById('cancelSaveBtn');
+        const confirmSaveBtn = document.getElementById('confirmSaveBtn');
 
         // Initialize UI
         function initializeUI() {
@@ -1121,13 +1201,84 @@
         }
 
         // Upload handlers
+        // Fungsi untuk membuka file picker
         function handleUpload() {
-            selectedImage = 'dummy';
-            analysisComplete = false;
-            progress = 0;
+            fileInput.click();
+        }
+
+        // Fungsi untuk menampilkan preview gambar yang dipilih
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
             
-            uploadSection.style.display = 'none';
-            imagePreview.style.display = 'block';
+            if (file && file.type.startsWith('image/')) {
+                selectedImage = file;
+                analysisComplete = false;
+                progress = 0;
+                
+                // Baca file dan tampilkan preview
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    // Simpan image data URL untuk disimpan ke Firestore nanti
+                    imageDataURL = e.target.result;
+                    
+                    // Hapus konten lama
+                    previewContainer.innerHTML = '';
+                    
+                    // Buat elemen img untuk preview
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.alt = 'Preview';
+                    
+                    // Buat tombol reset
+                    const resetButton = document.createElement('button');
+                    resetButton.className = 'reset-btn';
+                    resetButton.id = 'resetBtn';
+                    resetButton.innerHTML = '<i class="fas fa-redo"></i>';
+                    resetButton.addEventListener('click', resetAnalysis);
+                    
+                    // Tambahkan ke container
+                    previewContainer.appendChild(img);
+                    previewContainer.appendChild(resetButton);
+                    
+                    // Tampilkan preview section
+                    uploadSection.style.display = 'none';
+                    imagePreview.style.display = 'block';
+                };
+                
+                reader.readAsDataURL(file);
+            } else {
+                alert('Silakan pilih file gambar yang valid!');
+            }
+        }
+
+        // Fungsi untuk drag and drop
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadArea.style.borderColor = 'var(--blue-500)';
+            uploadArea.style.background = 'var(--blue-50)';
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            uploadArea.style.borderColor = 'var(--blue-300)';
+            uploadArea.style.background = '';
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            uploadArea.style.borderColor = 'var(--blue-300)';
+            uploadArea.style.background = '';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect({ target: fileInput });
+            }
         }
 
         function startAnalysis() {
@@ -1155,6 +1306,7 @@
 
         function resetAnalysis() {
             selectedImage = null;
+            imageDataURL = null; // Reset image data URL
             analysisComplete = false;
             progress = 0;
             
@@ -1162,8 +1314,18 @@
                 clearInterval(progressInterval);
             }
             
+            // Stop camera jika masih aktif
+            stopCamera();
+            
+            // Reset file input
+            fileInput.value = '';
+            
+            // Reset preview container ke state awal
+            previewContainer.innerHTML = '<i class="fas fa-file-image"></i>';
+            
             processingSection.style.display = 'none';
             resultsSection.style.display = 'none';
+            imagePreview.style.display = 'none';
             uploadSection.style.display = 'block';
         }
 
@@ -1238,24 +1400,376 @@
             });
         }
 
+        // ========== CAMERA FUNCTIONS ==========
+        
+        // Fungsi untuk membuka kamera modal dan start camera
+        async function openCamera() {
+            cameraModal.style.display = 'flex';
+            await startCamera();
+        }
+
+        // Fungsi untuk start camera stream
+        async function startCamera() {
+            try {
+                // Stop existing stream jika ada
+                if (cameraStream) {
+                    stopCamera();
+                }
+
+                // Request camera access
+                const constraints = {
+                    video: {
+                        facingMode: currentFacingMode,
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                };
+
+                cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+                cameraVideo.srcObject = cameraStream;
+                
+                console.log('Camera started successfully');
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                alert('Tidak dapat mengakses kamera. Pastikan Anda memberikan izin akses kamera.');
+                closeCamera();
+            }
+        }
+
+        // Fungsi untuk stop camera stream
+        function stopCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+                cameraVideo.srcObject = null;
+            }
+        }
+
+        // Fungsi untuk close camera modal
+        function closeCamera() {
+            stopCamera();
+            cameraModal.style.display = 'none';
+        }
+
+        // Fungsi untuk switch camera (front/back)
+        async function switchCamera() {
+            // Toggle facing mode
+            currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+            
+            // Restart camera dengan facing mode baru
+            await startCamera();
+        }
+
+        // Fungsi untuk capture foto dari kamera
+        function capturePhoto() {
+            // Set canvas dimensions sama dengan video
+            cameraCanvas.width = cameraVideo.videoWidth;
+            cameraCanvas.height = cameraVideo.videoHeight;
+
+            // Draw video frame ke canvas
+            const ctx = cameraCanvas.getContext('2d');
+            ctx.drawImage(cameraVideo, 0, 0, cameraCanvas.width, cameraCanvas.height);
+
+            // Convert canvas ke data URL
+            imageDataURL = cameraCanvas.toDataURL('image/jpeg', 0.9);
+
+            // Stop camera dan close modal
+            closeCamera();
+
+            // Tampilkan preview gambar
+            selectedImage = 'camera-capture';
+            analysisComplete = false;
+            progress = 0;
+
+            // Hapus konten lama
+            previewContainer.innerHTML = '';
+
+            // Buat elemen img untuk preview
+            const img = document.createElement('img');
+            img.src = imageDataURL;
+            img.alt = 'Camera Capture';
+
+            // Buat tombol reset
+            const resetButton = document.createElement('button');
+            resetButton.className = 'reset-btn';
+            resetButton.id = 'resetBtn';
+            resetButton.innerHTML = '<i class="fas fa-redo"></i>';
+            resetButton.addEventListener('click', resetAnalysis);
+
+            // Tambahkan ke container
+            previewContainer.appendChild(img);
+            previewContainer.appendChild(resetButton);
+
+            // Tampilkan preview section
+            uploadSection.style.display = 'none';
+            imagePreview.style.display = 'block';
+
+            console.log('Photo captured successfully');
+        }
+
+        // Fungsi untuk menampilkan modal input nama makanan
+        function showFoodNameModal() {
+            foodNameInput.value = '';
+            foodNameModal.style.display = 'flex';
+        }
+
+        // Fungsi untuk menutup modal
+        function closeFoodNameModal() {
+            foodNameModal.style.display = 'none';
+        }
+
+        // Fungsi untuk menyimpan hasil analisis ke Firestore
+        async function saveAnalysisToFirestore() {
+            const foodName = foodNameInput.value.trim();
+            
+            if (!foodName) {
+                alert('Silakan masukkan nama makanan!');
+                return;
+            }
+
+            if (!analysisComplete) {
+                alert('Belum ada hasil analisis untuk disimpan!');
+                closeFoodNameModal();
+                return;
+            }
+
+            try {
+                // Get current user
+                const user = firebase.auth().currentUser;
+                
+                if (!user) {
+                    alert('Anda harus login terlebih dahulu!');
+                    closeFoodNameModal();
+                    return;
+                }
+
+                // Buat data untuk disimpan
+                const now = new Date();
+                const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+                
+                const dayName = days[now.getDay()];
+                const date = now.getDate();
+                const month = months[now.getMonth()];
+                const year = now.getFullYear();
+                const time = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                
+                const analysisData = {
+                    // User info
+                    userId: user.uid,
+                    userEmail: user.email,
+                    
+                    // Waktu dan Tanggal
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    date: `${dayName}, ${date} ${month} ${year}`,
+                    time: time,
+                    
+                    // Nama Makanan
+                    foodName: foodName,
+                    
+                    // Foto (base64)
+                    imageUrl: imageDataURL,
+                    
+                    // Hasil Deteksi
+                    results: {
+                        status: resultData.status,
+                        totalCFU: resultData.totalCFU,
+                        confidence: resultData.confidence,
+                        bacteria: resultData.bacteria,
+                        treatment: resultData.treatment
+                    },
+                    
+                    // Metadata
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                // Simpan ke Firestore collection 'analysis'
+                const docRef = await firebase.firestore()
+                    .collection('analysis')
+                    .add(analysisData);
+
+                console.log('Hasil analisis berhasil disimpan dengan ID:', docRef.id);
+                
+                // Tutup modal dan tampilkan pesan sukses
+                closeFoodNameModal();
+                alert(`Hasil analisis "${foodName}" berhasil disimpan!`);
+
+            } catch (error) {
+                console.error('Error menyimpan hasil analisis:', error);
+                alert('Terjadi kesalahan saat menyimpan hasil analisis. Silakan coba lagi.');
+            }
+        }
+
+        // Fungsi untuk export hasil analisis sebagai file text
+        function exportAnalysisReport() {
+            // Buat timestamp untuk nama file
+            const now = new Date();
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            
+            const dayName = days[now.getDay()];
+            const date = now.getDate();
+            const month = months[now.getMonth()];
+            const year = now.getFullYear();
+            const time = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            
+            // Buat konten report
+            let reportContent = `
+╔════════════════════════════════════════════════════════════════╗
+║              LAPORAN HASIL ANALISIS MIKROBIOLOGI              ║
+║                       BioLens AI System                        ║
+╚════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ INFORMASI ANALISIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Tanggal           : ${dayName}, ${date} ${month} ${year}
+Waktu             : ${time}
+Status            : ${resultData.status.toUpperCase()}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ HASIL DETEKSI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Total CFU         : ${resultData.totalCFU}
+Confidence        : ${resultData.confidence}%
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ BAKTERI TERIDENTIFIKASI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+`;
+
+            // Tambahkan detail bakteri
+            resultData.bacteria.forEach((bacteria, index) => {
+                reportContent += `
+${index + 1}. ${bacteria.name} (${bacteria.scientific})
+   ├─ CFU            : ${bacteria.cfu}
+   ├─ Persentase     : ${bacteria.percentage}%
+   ├─ Confidence     : ${bacteria.confidence}%
+   └─ Tingkat Bahaya : ${bacteria.danger.toUpperCase()}
+`;
+            });
+
+            // Tambahkan rekomendasi treatment
+            reportContent += `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ REKOMENDASI UV TREATMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Dosis UV          : ${resultData.treatment.dose} mJ/cm²
+Durasi            : ${resultData.treatment.duration} menit
+Prediksi Reduksi  : ${resultData.treatment.reduction}%
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ CATATAN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Laporan ini dihasilkan secara otomatis oleh sistem BioLens AI.
+Untuk informasi lebih lanjut, hubungi tim BioLens.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+© ${year} BioLens - Smart UV Sterilization System
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+
+            // Buat blob dari konten text
+            const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
+            
+            // Buat URL untuk blob
+            const url = window.URL.createObjectURL(blob);
+            
+            // Buat element link untuk download
+            const link = document.createElement('a');
+            link.href = url;
+            
+            // Format nama file: BioLens_Report_YYYYMMDD_HHMMSS.txt
+            const fileDate = now.toISOString().slice(0, 10).replace(/-/g, '');
+            const fileTime = now.toTimeString().slice(0, 8).replace(/:/g, '');
+            link.download = `BioLens_Report_${fileDate}_${fileTime}.txt`;
+            
+            // Trigger download
+            document.body.appendChild(link);
+            link.click();
+            
+            // Cleanup
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+            
+            // Tampilkan notifikasi sukses
+            const originalContent = exportBtn.innerHTML;
+            exportBtn.innerHTML = '<i class="fas fa-check"></i><span class="btn-label">Tersimpan!</span>';
+            exportBtn.style.background = 'var(--green-600)';
+            
+            setTimeout(() => {
+                exportBtn.innerHTML = originalContent;
+                exportBtn.style.background = '';
+            }, 2000);
+        }
+
         // Event Listeners
-        uploadArea.addEventListener('click', handleUpload);
+        // File input change event
+        fileInput.addEventListener('change', handleFileSelect);
+        
+        // Upload button - open file picker
         uploadBtn.addEventListener('click', handleUpload);
+        
+        // Upload area click - open file picker
+        uploadArea.addEventListener('click', handleUpload);
+        
+        // Drag and drop events
+        uploadArea.addEventListener('dragover', handleDragOver);
+        uploadArea.addEventListener('dragleave', handleDragLeave);
+        uploadArea.addEventListener('drop', handleDrop);
+        
+        // Camera button - buka kamera modal
         cameraBtn.addEventListener('click', () => {
-            alert('Fitur kamera akan segera hadir!');
+            openCamera();
         });
-        resetBtn.addEventListener('click', resetAnalysis);
+        
+        // Camera modal controls
+        closeCameraBtn.addEventListener('click', closeCamera);
+        switchCameraBtn.addEventListener('click', switchCamera);
+        capturePhotoBtn.addEventListener('click', capturePhoto);
+        
+        // Analyze button
         analyzeBtn.addEventListener('click', startAnalysis);
         treatmentBtn.addEventListener('click', () => {
             alert('Memulai UV Treatment...');
         });
+        // Tombol Export - download hasil analisis sebagai file
         exportBtn.addEventListener('click', () => {
-            alert('Mengekspor hasil analisis...');
+            if (!analysisComplete) {
+                alert('Belum ada hasil analisis untuk diekspor!');
+                return;
+            }
+            
+            exportAnalysisReport();
         });
+        
+        // Tombol Simpan - tampilkan modal input nama makanan
         saveBtn.addEventListener('click', () => {
-            alert('Menyimpan hasil analisis...');
+            if (!analysisComplete) {
+                alert('Belum ada hasil analisis untuk disimpan!');
+                return;
+            }
+            showFoodNameModal();
         });
+        
         restartBtn.addEventListener('click', resetAnalysis);
+
+        // Modal event listeners
+        cancelSaveBtn.addEventListener('click', closeFoodNameModal);
+        confirmSaveBtn.addEventListener('click', saveAnalysisToFirestore);
+        
+        // Enter key untuk submit di input nama makanan
+        foodNameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                saveAnalysisToFirestore();
+            }
+        });
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', initializeUI);

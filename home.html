@@ -25,11 +25,11 @@
 
       /* --- Color Palette --- */
       :root {
-        --primary-50: #f5f3ff;
-        --primary-100: #ede9fe;
-        --primary-500: #8b5cf6;
-        --primary-600: #7c3aed;
-        --primary-700: #6d28d9;
+        --primary-50: #eff6ff;
+        --primary-100: #dbeafe;
+        --primary-500: #3b82f6;
+        --primary-600: #2563eb;
+        --primary-700: #1d4ed8;
         --secondary-500: #10b981;
         --secondary-600: #059669;
         --green-50: #f0fdf4;
@@ -141,21 +141,26 @@
       }
 
       .logo {
-        background: linear-gradient(
-          135deg,
-          var(--primary-600),
-          var(--primary-500)
-        );
-        padding: 0.75rem;
+        background: transparent;
+        padding: 0.5rem;
         border-radius: 1rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 10px -3px rgba(124, 58, 237, 0.5);
+        box-shadow: none;
+        width: 2.5rem;
+        height: 2.5rem;
       }
       .logo i {
         color: white;
         font-size: 1.25rem;
+      }
+      
+      .logo-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 0.5rem;
       }
 
       .app-info h1 {
@@ -239,7 +244,7 @@
           var(--primary-500)
         );
         border-radius: 1.25rem;
-        box-shadow: 0 10px 20px -5px rgba(124, 58, 237, 0.4);
+        box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
         padding: 1rem;
         color: white;
       }
@@ -869,7 +874,7 @@
         <div class="header-top">
           <div class="logo-container">
             <div class="logo">
-              <i class="fas fa-microscope"></i>
+              <img src="assets/logo.png" alt="BioLens Logo" class="logo-img">
             </div>
             <div class="app-info">
               <h1>Bio-Lens</h1>
@@ -883,10 +888,10 @@
         </div>
         <div class="date-time">
           <i class="fas fa-calendar"></i>
-          <span>Kamis, 2 Okt 2025</span>
+          <span id="currentDate">Loading...</span>
           <span class="separator">•</span>
           <i class="fas fa-clock"></i>
-          <span>09:30</span>
+          <span id="currentTime">Loading...</span>
         </div>
       </header>
 
@@ -902,22 +907,22 @@
           <div class="stats-items">
             <div class="stat-item">
               <div class="stat-icon">📊</div>
-              <div class="stat-value">23</div>
+              <div class="stat-value" id="totalScanValue">0</div>
               <div class="stat-label">Total Scan</div>
             </div>
             <div class="stat-item">
               <div class="stat-icon">⚠️</div>
-              <div class="stat-value">3</div>
+              <div class="stat-value" id="contaminationValue">0</div>
               <div class="stat-label">Kontaminasi</div>
             </div>
             <div class="stat-item">
               <div class="stat-icon">✅</div>
-              <div class="stat-value">20</div>
+              <div class="stat-value" id="sterilValue">0</div>
               <div class="stat-label">Steril</div>
             </div>
             <div class="stat-item">
               <div class="stat-icon">📈</div>
-              <div class="stat-value">87%</div>
+              <div class="stat-value" id="successRateValue">0%</div>
               <div class="stat-label">Success Rate</div>
             </div>
           </div>
@@ -932,21 +937,21 @@
         <div class="breakdown-items">
           <div class="breakdown-item safe">
             <i class="fas fa-check-circle"></i>
-            <div class="breakdown-value">17</div>
+            <div class="breakdown-value" id="safeValue">0</div>
             <div class="breakdown-label">AMAN</div>
-            <div class="breakdown-percentage">73.9%</div>
+            <div class="breakdown-percentage" id="safePercentage">0%</div>
           </div>
           <div class="breakdown-item warning">
             <i class="fas fa-exclamation-triangle"></i>
-            <div class="breakdown-value">3</div>
+            <div class="breakdown-value" id="warningValue">0</div>
             <div class="breakdown-label">WARNING</div>
-            <div class="breakdown-percentage">13.0%</div>
+            <div class="breakdown-percentage" id="warningPercentage">0%</div>
           </div>
           <div class="breakdown-item danger">
             <i class="fas fa-times-circle"></i>
-            <div class="breakdown-value">3</div>
+            <div class="breakdown-value" id="dangerValue">0</div>
             <div class="breakdown-label">BAHAYA</div>
-            <div class="breakdown-percentage">13.0%</div>
+            <div class="breakdown-percentage" id="dangerPercentage">0%</div>
           </div>
         </div>
       </div>
@@ -956,15 +961,15 @@
           <div class="trend-title">7-Day Trend</div>
           <div class="trend-chart"></div>
         </div>
-        <div class="alert-mini-card card">
+        <div class="alert-mini-card card" id="alertMiniCard">
           <div class="alert-mini-header">
             <i class="fas fa-exclamation-triangle"></i>
             <div class="alert-mini-title">Alert</div>
           </div>
           <div class="alert-mini-content">
-            <div class="alert-mini-text">3 Kontaminasi</div>
-            <div class="alert-mini-subtext">Terdeteksi hari ini</div>
-            <button class="alert-mini-btn">Lihat Detail</button>
+            <div class="alert-mini-text" id="alertMiniText">0 Kontaminasi</div>
+            <div class="alert-mini-subtext" id="alertMiniSubtext">Terdeteksi hari ini</div>
+            <button class="alert-mini-btn" id="alertMiniBtn">Lihat Detail</button>
           </div>
         </div>
       </div>
@@ -980,7 +985,7 @@
         <div class="samples-list"></div>
       </div>
 
-      <div class="warning-card card">
+      <div class="warning-card card" id="warningCard" style="display: none;">
         <div class="warning-header">
           <div class="warning-icon">
             <i class="fas fa-exclamation-triangle"></i>
@@ -990,15 +995,15 @@
         <div class="warning-content">
           <div class="warning-top">
             <div class="warning-details">
-              <div class="warning-item">Nasi Goreng - Dapur A</div>
-              <div class="warning-desc">E. coli contamination (245 CFU/ml)</div>
+              <div class="warning-item" id="warningItem">Loading...</div>
+              <div class="warning-desc" id="warningDesc">Loading...</div>
             </div>
-            <div class="warning-badge">URGENT</div>
+            <div class="warning-badge" id="warningBadge">URGENT</div>
           </div>
           <div class="warning-bottom">
             <div class="warning-time">
               <i class="fas fa-clock"></i>
-              <span>5 menit lalu</span>
+              <span id="warningTime">Loading...</span>
             </div>
             <div class="warning-actions">
               <button class="warning-btn detail">Detail</button>
@@ -1015,27 +1020,22 @@
     <nav class="bottom-nav">
       <div class="nav-container">
         <a href="home.html" class="nav-btn active" id="home-btn">
-          <span class="nav-indicator"></span>
           <i class="fas fa-home"></i>
           <span class="nav-label">Home</span>
         </a>
         <a href="control.html" class="nav-btn" id="control-btn">
-          <span class="nav-indicator"></span>
           <i class="fas fa-sliders-h"></i>
           <span class="nav-label">Kontrol</span>
         </a>
         <a href="analysis.html" class="nav-btn" id="analysis-btn">
-          <span class="nav-indicator"></span>
           <i class="fas fa-file-image"></i>
           <span class="nav-label">Analisis</span>
         </a>
         <a href="database.html" class="nav-btn" id="database-btn">
-          <span class="nav-indicator"></span>
           <i class="fas fa-database"></i>
           <span class="nav-label">Database</span>
         </a>
         <a href="profile.html" class="nav-btn" id="profile-btn">
-          <span class="nav-indicator"></span>
           <i class="fas fa-user"></i>
           <span class="nav-label">Profile</span>
         </a>
@@ -1085,48 +1085,435 @@
         });
       }
 
-      // Generate sample items
-      function generateSampleItems() {
+      // Generate sample items from Firestore
+      async function generateSampleItems() {
         const samplesList = document.querySelector(".samples-list");
         if (!samplesList) return; // Exit if element not found
         
-        const sampleData = [
-          { name: "Nasi Goreng Spesial", status: "safe", cfu: 0, time: "09:15" },
-          { name: "Rendang Daging Sapi", status: "warning", cfu: 45, time: "09:10" },
-          { name: "Soto Ayam Lamongan", status: "danger", cfu: 245, time: "09:00" },
-          { name: "Gado-gado", status: "safe", cfu: 12, time: "08:45" },
-          { name: "Sate Ayam", status: "safe", cfu: 8, time: "08:30" }
-        ];
-        
-        samplesList.innerHTML = ""; // Clear existing items
-        
-        sampleData.forEach((sample) => {
-          const sampleItem = document.createElement("div");
-          sampleItem.className = `sample-item ${sample.status}`;
+        try {
+          const user = firebase.auth().currentUser;
+          if (!user) {
+            samplesList.innerHTML = '<p style="text-align: center; color: var(--gray-500); font-size: 0.625rem; padding: 2rem;">Silakan login untuk melihat sampel terbaru</p>';
+            return;
+          }
 
-          sampleItem.innerHTML = `
-            <div class="sample-info">
-                <div class="sample-icon">
-                    <i class="fas ${
-                      sample.status === "safe"
-                        ? "fa-check-circle"
-                        : sample.status === "warning"
-                        ? "fa-exclamation-triangle"
-                        : "fa-times-circle"
-                    }"></i>
-                </div>
-                <div class="sample-details">
-                    <div class="sample-name">${sample.name}</div>
-                    <div class="sample-cfu">${sample.cfu ? sample.cfu + ' CFU/ml' : 'Aman'}</div>
-                </div>
-            </div>
-            <div class="sample-meta">
-                <div class="sample-time">${sample.time}</div>
-                <div class="sample-status">${sample.status.toUpperCase()}</div>
-            </div>
-          `;
-          samplesList.appendChild(sampleItem);
-        });
+          // Fetch latest 5 analysis records from Firestore
+          const querySnapshot = await firebase.firestore()
+            .collection('analysis')
+            .where('userId', '==', user.uid)
+            .limit(5)
+            .get();
+
+          samplesList.innerHTML = ""; // Clear existing items
+
+          if (querySnapshot.empty) {
+            samplesList.innerHTML = '<p style="text-align: center; color: var(--gray-500); font-size: 0.625rem; padding: 2rem;">Belum ada data analisis</p>';
+            return;
+          }
+
+          const sampleData = [];
+          querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const totalCFU = data.results?.totalCFU || 0;
+            const resultStatus = data.results?.status?.toLowerCase() || '';
+            
+            let status = 'safe';
+            if (resultStatus === 'bahaya' || totalCFU > 100) {
+              status = 'danger';
+            } else if (resultStatus === 'warning' || totalCFU > 30) {
+              status = 'warning';
+            }
+
+            sampleData.push({
+              name: data.foodName || 'Tidak ada nama',
+              status: status,
+              cfu: totalCFU,
+              time: data.time || '-'
+            });
+          });
+
+          // Sort by timestamp (newest first)
+          sampleData.sort((a, b) => {
+            const timeA = a.time.split(':').map(Number);
+            const timeB = b.time.split(':').map(Number);
+            return (timeB[0] * 60 + timeB[1]) - (timeA[0] * 60 + timeA[1]);
+          });
+          
+          sampleData.forEach((sample) => {
+            const sampleItem = document.createElement("div");
+            sampleItem.className = `sample-item ${sample.status}`;
+
+            sampleItem.innerHTML = `
+              <div class="sample-info">
+                  <div class="sample-icon">
+                      <i class="fas ${
+                        sample.status === "safe"
+                          ? "fa-check-circle"
+                          : sample.status === "warning"
+                          ? "fa-exclamation-triangle"
+                          : "fa-times-circle"
+                      }"></i>
+                  </div>
+                  <div class="sample-details">
+                      <div class="sample-name">${sample.name}</div>
+                      <div class="sample-cfu">${sample.cfu ? sample.cfu + ' CFU/ml' : 'Aman'}</div>
+                  </div>
+              </div>
+              <div class="sample-meta">
+                  <div class="sample-time">${sample.time}</div>
+                  <div class="sample-status">${sample.status.toUpperCase()}</div>
+              </div>
+            `;
+            samplesList.appendChild(sampleItem);
+          });
+
+          console.log(`Loaded ${sampleData.length} recent samples from Firestore`);
+        } catch (error) {
+          console.error('Error fetching samples from Firestore:', error);
+          samplesList.innerHTML = '<p style="text-align: center; color: var(--red-500); font-size: 0.625rem; padding: 2rem;">Gagal memuat data sampel</p>';
+        }
+      }
+
+      // Generate warning card from Firestore
+      async function generateWarningCard() {
+        const warningCard = document.getElementById('warningCard');
+        if (!warningCard) return;
+
+        try {
+          const user = firebase.auth().currentUser;
+          if (!user) {
+            warningCard.style.display = 'none';
+            return;
+          }
+
+          // Fetch latest dangerous analysis from Firestore
+          const querySnapshot = await firebase.firestore()
+            .collection('analysis')
+            .where('userId', '==', user.uid)
+            .get();
+
+          let dangerousAnalysis = null;
+          let latestDangerousTime = null;
+
+          querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const totalCFU = data.results?.totalCFU || 0;
+            const resultStatus = data.results?.status?.toLowerCase() || '';
+            
+            // Check if this is a dangerous analysis
+            const isDangerous = resultStatus === 'bahaya' || totalCFU > 100;
+            
+            if (isDangerous) {
+              const analysisTime = data.createdAt || data.timestamp;
+              if (!latestDangerousTime || (analysisTime && analysisTime.toMillis() > latestDangerousTime.toMillis())) {
+                dangerousAnalysis = data;
+                latestDangerousTime = analysisTime;
+              }
+            }
+          });
+
+          if (dangerousAnalysis) {
+            // Calculate time difference
+            const now = new Date();
+            const analysisTime = latestDangerousTime ? latestDangerousTime.toDate() : new Date(dangerousAnalysis.time);
+            const timeDiff = Math.floor((now - analysisTime) / (1000 * 60)); // minutes ago
+            
+            let timeText;
+            if (timeDiff < 1) {
+              timeText = 'Baru saja';
+            } else if (timeDiff < 60) {
+              timeText = `${timeDiff} menit lalu`;
+            } else if (timeDiff < 1440) {
+              const hours = Math.floor(timeDiff / 60);
+              timeText = `${hours} jam lalu`;
+            } else {
+              const days = Math.floor(timeDiff / 1440);
+              timeText = `${days} hari lalu`;
+            }
+
+            // Get bacteria information
+            const bacteria = dangerousAnalysis.results?.bacteria || [];
+            let bacteriaDesc = '';
+            if (bacteria.length > 0) {
+              const mainBacteria = bacteria[0];
+              bacteriaDesc = `${mainBacteria.name || mainBacteria.scientific || 'Bakteri'} contamination`;
+            } else {
+              bacteriaDesc = 'Kontaminasi bakteri';
+            }
+
+            // Update DOM elements
+            document.getElementById('warningItem').textContent = `${dangerousAnalysis.foodName || 'Makanan'} - Analisis`;
+            document.getElementById('warningDesc').textContent = `${bacteriaDesc} (${dangerousAnalysis.results?.totalCFU || 0} CFU/ml)`;
+            document.getElementById('warningTime').textContent = timeText;
+            
+            // Set badge based on CFU level
+            const cfu = dangerousAnalysis.results?.totalCFU || 0;
+            let badgeText = 'URGENT';
+            if (cfu > 500) {
+              badgeText = 'CRITICAL';
+            } else if (cfu > 300) {
+              badgeText = 'URGENT';
+            } else {
+              badgeText = 'WARNING';
+            }
+            document.getElementById('warningBadge').textContent = badgeText;
+
+            warningCard.style.display = 'block';
+            console.log('Warning card displayed with dangerous analysis');
+          } else {
+            warningCard.style.display = 'none';
+            console.log('No dangerous analysis found');
+          }
+
+        } catch (error) {
+          console.error('Error fetching warning data from Firestore:', error);
+          warningCard.style.display = 'none';
+        }
+      }
+
+      // Update stats from Firestore
+      async function updateStatsFromFirestore() {
+        try {
+          const user = firebase.auth().currentUser;
+          if (!user) {
+            // Reset stats if user not logged in
+            document.getElementById('totalScanValue').textContent = '0';
+            document.getElementById('contaminationValue').textContent = '0';
+            document.getElementById('sterilValue').textContent = '0';
+            document.getElementById('successRateValue').textContent = '0%';
+            return;
+          }
+
+          // Get today's date range
+          const now = new Date();
+          const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+
+          // Fetch all analysis records from Firestore (client-side filtering)
+          const querySnapshot = await firebase.firestore()
+            .collection('analysis')
+            .where('userId', '==', user.uid)
+            .get();
+
+          let totalScan = 0;
+          let contamination = 0;
+          let steril = 0;
+
+          querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const analysisTime = data.createdAt || data.timestamp;
+            
+            // Check if analysis is from today
+            if (analysisTime) {
+              const analysisDate = analysisTime.toDate ? analysisTime.toDate() : new Date(analysisTime);
+              if (analysisDate >= startOfDay && analysisDate < endOfDay) {
+                const totalCFU = data.results?.totalCFU || 0;
+                const resultStatus = data.results?.status?.toLowerCase() || '';
+                
+                totalScan++;
+                
+                // Count contamination (dangerous + warning)
+                if (resultStatus === 'bahaya' || totalCFU > 100 || 
+                    resultStatus === 'warning' || totalCFU > 30) {
+                  contamination++;
+                } else {
+                  steril++;
+                }
+              }
+            }
+          });
+
+          // Calculate success rate (percentage of safe analyses)
+          const successRate = totalScan > 0 ? Math.round((steril / totalScan) * 100) : 0;
+
+          // Update DOM elements
+          document.getElementById('totalScanValue').textContent = totalScan;
+          document.getElementById('contaminationValue').textContent = contamination;
+          document.getElementById('sterilValue').textContent = steril;
+          document.getElementById('successRateValue').textContent = `${successRate}%`;
+
+          console.log(`Stats updated - Total: ${totalScan}, Contamination: ${contamination}, Steril: ${steril}, Success Rate: ${successRate}%`);
+
+        } catch (error) {
+          console.error('Error updating stats from Firestore:', error);
+          // Set default values on error
+          document.getElementById('totalScanValue').textContent = '0';
+          document.getElementById('contaminationValue').textContent = '0';
+          document.getElementById('sterilValue').textContent = '0';
+          document.getElementById('successRateValue').textContent = '0%';
+        }
+      }
+
+      // Update breakdown from Firestore
+      async function updateBreakdownFromFirestore() {
+        try {
+          const user = firebase.auth().currentUser;
+          if (!user) {
+            // Reset breakdown if user not logged in
+            document.getElementById('safeValue').textContent = '0';
+            document.getElementById('warningValue').textContent = '0';
+            document.getElementById('dangerValue').textContent = '0';
+            document.getElementById('safePercentage').textContent = '0%';
+            document.getElementById('warningPercentage').textContent = '0%';
+            document.getElementById('dangerPercentage').textContent = '0%';
+            return;
+          }
+
+          // Get today's date range
+          const now = new Date();
+          const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+
+          // Fetch all analysis records from Firestore (client-side filtering)
+          const querySnapshot = await firebase.firestore()
+            .collection('analysis')
+            .where('userId', '==', user.uid)
+            .get();
+
+          let safe = 0;
+          let warning = 0;
+          let danger = 0;
+
+          querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const analysisTime = data.createdAt || data.timestamp;
+            
+            // Check if analysis is from today
+            if (analysisTime) {
+              const analysisDate = analysisTime.toDate ? analysisTime.toDate() : new Date(analysisTime);
+              if (analysisDate >= startOfDay && analysisDate < endOfDay) {
+                const totalCFU = data.results?.totalCFU || 0;
+                const resultStatus = data.results?.status?.toLowerCase() || '';
+                
+                // Categorize based on CFU and status
+                if (resultStatus === 'bahaya' || totalCFU > 100) {
+                  danger++;
+                } else if (resultStatus === 'warning' || totalCFU > 30) {
+                  warning++;
+                } else {
+                  safe++;
+                }
+              }
+            }
+          });
+
+          const total = safe + warning + danger;
+
+          // Calculate percentages
+          const safePercentage = total > 0 ? ((safe / total) * 100).toFixed(1) : 0;
+          const warningPercentage = total > 0 ? ((warning / total) * 100).toFixed(1) : 0;
+          const dangerPercentage = total > 0 ? ((danger / total) * 100).toFixed(1) : 0;
+
+          // Update DOM elements
+          document.getElementById('safeValue').textContent = safe;
+          document.getElementById('warningValue').textContent = warning;
+          document.getElementById('dangerValue').textContent = danger;
+          document.getElementById('safePercentage').textContent = `${safePercentage}%`;
+          document.getElementById('warningPercentage').textContent = `${warningPercentage}%`;
+          document.getElementById('dangerPercentage').textContent = `${dangerPercentage}%`;
+
+          console.log(`Breakdown updated - Safe: ${safe} (${safePercentage}%), Warning: ${warning} (${warningPercentage}%), Danger: ${danger} (${dangerPercentage}%)`);
+
+        } catch (error) {
+          console.error('Error updating breakdown from Firestore:', error);
+          // Set default values on error
+          document.getElementById('safeValue').textContent = '0';
+          document.getElementById('warningValue').textContent = '0';
+          document.getElementById('dangerValue').textContent = '0';
+          document.getElementById('safePercentage').textContent = '0%';
+          document.getElementById('warningPercentage').textContent = '0%';
+          document.getElementById('dangerPercentage').textContent = '0%';
+        }
+      }
+
+      // Update alert mini card from Firestore
+      async function updateAlertMiniCard() {
+        try {
+          const user = firebase.auth().currentUser;
+          if (!user) {
+            // Reset alert if user not logged in
+            document.getElementById('alertMiniText').textContent = '0 Kontaminasi';
+            document.getElementById('alertMiniSubtext').textContent = 'Terdeteksi hari ini';
+            return;
+          }
+
+          // Get today's date range
+          const now = new Date();
+          const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+
+          // Fetch all analysis records from Firestore (client-side filtering)
+          const querySnapshot = await firebase.firestore()
+            .collection('analysis')
+            .where('userId', '==', user.uid)
+            .get();
+
+          let contaminationCount = 0;
+          let dangerCount = 0;
+
+          querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const analysisTime = data.createdAt || data.timestamp;
+            
+            // Check if analysis is from today
+            if (analysisTime) {
+              const analysisDate = analysisTime.toDate ? analysisTime.toDate() : new Date(analysisTime);
+              if (analysisDate >= startOfDay && analysisDate < endOfDay) {
+                const totalCFU = data.results?.totalCFU || 0;
+                const resultStatus = data.results?.status?.toLowerCase() || '';
+                
+                // Count contamination (dangerous + warning)
+                if (resultStatus === 'bahaya' || totalCFU > 100 || 
+                    resultStatus === 'warning' || totalCFU > 30) {
+                  contaminationCount++;
+                  
+                  // Count dangerous specifically
+                  if (resultStatus === 'bahaya' || totalCFU > 100) {
+                    dangerCount++;
+                  }
+                }
+              }
+            }
+          });
+
+          // Update DOM elements
+          document.getElementById('alertMiniText').textContent = `${contaminationCount} Kontaminasi`;
+          
+          // Update subtext based on contamination level
+          let subtext = 'Terdeteksi hari ini';
+          if (dangerCount > 0) {
+            subtext = `${dangerCount} berbahaya hari ini`;
+          } else if (contaminationCount > 0) {
+            subtext = 'Perhatian diperlukan';
+          } else {
+            subtext = 'Semua aman hari ini';
+          }
+          document.getElementById('alertMiniSubtext').textContent = subtext;
+
+          // Update button text and behavior
+          const alertBtn = document.getElementById('alertMiniBtn');
+          if (contaminationCount > 0) {
+            alertBtn.textContent = 'Lihat Detail';
+            alertBtn.onclick = () => {
+              // Redirect to database page to see details
+              window.location.href = 'database.html';
+            };
+          } else {
+            alertBtn.textContent = 'Riwayat';
+            alertBtn.onclick = () => {
+              // Redirect to database page
+              window.location.href = 'database.html';
+            };
+          }
+
+          console.log(`Alert mini card updated - Contamination: ${contaminationCount}, Danger: ${dangerCount}`);
+
+        } catch (error) {
+          console.error('Error updating alert mini card from Firestore:', error);
+          // Set default values on error
+          document.getElementById('alertMiniText').textContent = '0 Kontaminasi';
+          document.getElementById('alertMiniSubtext').textContent = 'Terdeteksi hari ini';
+        }
       }
 
       // Initialize the application
@@ -1143,8 +1530,50 @@
           });
       }
 
+      // Real-time date and time update
+      function updateDateTime() {
+        const now = new Date();
+        
+        // Format date in Indonesian
+        const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        
+        const dayName = days[now.getDay()];
+        const date = now.getDate();
+        const month = months[now.getMonth()];
+        const year = now.getFullYear();
+        
+        const formattedDate = `${dayName}, ${date} ${month} ${year}`;
+        
+        // Format time
+        const time = now.toLocaleTimeString('id-ID', { 
+          hour: '2-digit', 
+          minute: '2-digit'
+        });
+        
+        // Update DOM elements
+        const dateElement = document.getElementById('currentDate');
+        const timeElement = document.getElementById('currentTime');
+        
+        if (dateElement) {
+          dateElement.textContent = formattedDate;
+        }
+        if (timeElement) {
+          timeElement.textContent = time;
+        }
+      }
+
       // Initialize the application
       document.addEventListener("DOMContentLoaded", function () {
+        // Update date and time immediately and then every second
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+        
+        // Update stats, breakdown, and alert every 30 seconds for real-time data
+        setInterval(updateStatsFromFirestore, 30000);
+        setInterval(updateBreakdownFromFirestore, 30000);
+        setInterval(updateAlertMiniCard, 30000);
+        
         // Check authentication state
         firebase.auth().onAuthStateChanged((user) => {
           if (!user) {
@@ -1154,7 +1583,21 @@
 
           // User is signed in, load the app
           generateTrendChart();
-          generateSampleItems();
+          updateStatsFromFirestore().catch(error => {
+            console.error('Error loading stats:', error);
+          });
+          updateBreakdownFromFirestore().catch(error => {
+            console.error('Error loading breakdown:', error);
+          });
+          updateAlertMiniCard().catch(error => {
+            console.error('Error loading alert mini:', error);
+          });
+          generateSampleItems().catch(error => {
+            console.error('Error loading samples:', error);
+          });
+          generateWarningCard().catch(error => {
+            console.error('Error loading warning:', error);
+          });
 
           // Update user info in the UI
           if (user.displayName) {
@@ -1186,9 +1629,7 @@
           .addEventListener("click", () =>
             alert("Menampilkan semua sampel...")
           );
-        document
-          .querySelector(".alert-mini-btn")
-          .addEventListener("click", () => alert("Membuka detail alert..."));
+        // Alert mini button click handler is now set dynamically in updateAlertMiniCard()
         document
           .querySelector(".warning-btn.detail")
           .addEventListener("click", () =>
@@ -1249,10 +1690,10 @@
         height: 3.5rem;
         border-radius: 50%;
         text-decoration: none;
-        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        background: linear-gradient(135deg, var(--primary-600), var(--primary-500));
         color: white;
         border: none;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 4px 20px rgba(37, 99, 235, 0.3);
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -1264,7 +1705,7 @@
 
       .chatbot-toggle:hover {
         transform: scale(1.1);
-        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 6px 25px rgba(37, 99, 235, 0.4);
       }
 
       .chatbot-container {
@@ -1293,7 +1734,7 @@
       }
 
       .chatbot-header {
-        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        background: linear-gradient(135deg, var(--primary-600), var(--primary-500));
         color: white;
         padding: 1rem;
         display: flex;
@@ -1354,7 +1795,7 @@
       }
 
       .chatbot-message.user {
-        background: #8b5cf6;
+        background: var(--primary-600);
         color: white;
         align-self: flex-end;
         border-bottom-right-radius: 0.25rem;
@@ -1385,7 +1826,7 @@
       }
 
       .chatbot-input input:focus {
-        border-color: #8b5cf6;
+        border-color: var(--primary-600);
       }
 
       .chatbot-input button {
@@ -1393,7 +1834,7 @@
         width: 42px;
         height: 42px;
         border-radius: 50%;
-        background: #8b5cf6;
+        background: var(--primary-600);
         color: white;
         border: none;
         display: flex;
@@ -1404,7 +1845,7 @@
       }
 
       .chatbot-input button:hover {
-        background: #7c3aed;
+        background: var(--primary-700);
       }
     </style>
 

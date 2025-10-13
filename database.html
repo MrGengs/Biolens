@@ -663,11 +663,18 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: hidden;
         }
 
         .history-image i {
             font-size: 1rem;
             color: var(--gray-400);
+        }
+
+        .history-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .history-details {
@@ -955,6 +962,12 @@
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+    <script src="firebase/config.js"></script>
+
     <!-- Bottom Navigation -->
     <nav class="bottom-nav">
         <div class="nav-container">
@@ -1056,13 +1069,8 @@
             }
         ];
 
-        const historyData = [
-            { id: 1, food: 'Nasi Goreng', date: '01/10/2025', time: '09:15', status: 'aman', cfu: 0 },
-            { id: 2, food: 'Rendang', date: '01/10/2025', time: '09:00', status: 'warning', cfu: 45 },
-            { id: 3, food: 'Soto Ayam', date: '30/09/2025', time: '16:30', status: 'bahaya', cfu: 245 },
-            { id: 4, food: 'Sayur Asem', date: '30/09/2025', time: '14:20', status: 'aman', cfu: 2 },
-            { id: 5, food: 'Ayam Goreng', date: '30/09/2025', time: '12:00', status: 'warning', cfu: 38 }
-        ];
+        // History data akan diambil dari Firestore
+        let historyData = [];
 
         // DOM Elements
         const tabButtons = document.querySelectorAll('.tab-btn');
@@ -1086,12 +1094,86 @@
         const exportBtn = document.getElementById('exportBtn');
 
         // Initialize UI
-        function initializeUI() {
+        async function initializeUI() {
             generateSpecimenGrid();
             generatePathogenList();
-            generateHistoryList();
             updateNavigation();
             setupEventListeners();
+            
+            // Fetch history data dari Firestore
+            await fetchHistoryFromFirestore();
+        }
+
+        // Fungsi untuk mengambil data history dari Firestore
+        async function fetchHistoryFromFirestore() {
+            try {
+                // Get current user
+                const user = firebase.auth().currentUser;
+                
+                if (!user) {
+                    console.log('User belum login');
+                    // Tampilkan pesan kosong jika belum login
+                    historyList.innerHTML = '<p style="text-align: center; color: var(--gray-500); font-size: 0.625rem; padding: 2rem;">Silakan login untuk melihat riwayat analisis</p>';
+                    return;
+                }
+
+                // Query Firestore collection 'analysis' untuk user yang login
+                // Tidak menggunakan orderBy untuk menghindari composite index requirement
+                const querySnapshot = await firebase.firestore()
+                    .collection('analysis')
+                    .where('userId', '==', user.uid)
+                    .get();
+
+                // Reset historyData
+                historyData = [];
+
+                // Process documents
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    
+                    // Tentukan status berdasarkan totalCFU atau status dari hasil
+                    let status = 'aman';
+                    const totalCFU = data.results?.totalCFU || 0;
+                    const resultStatus = data.results?.status?.toLowerCase() || '';
+                    
+                    if (resultStatus === 'bahaya' || totalCFU > 100) {
+                        status = 'bahaya';
+                    } else if (resultStatus === 'warning' || totalCFU > 30) {
+                        status = 'warning';
+                    }
+                    
+                    historyData.push({
+                        id: doc.id,
+                        food: data.foodName || 'Tidak ada nama',
+                        date: data.date || '-',
+                        time: data.time || '-',
+                        status: status,
+                        cfu: totalCFU,
+                        imageUrl: data.imageUrl || null,
+                        timestamp: data.createdAt || null,
+                        fullData: data
+                    });
+                });
+
+                // Sort di client-side berdasarkan timestamp (terbaru di atas)
+                historyData.sort((a, b) => {
+                    if (!a.timestamp) return 1;
+                    if (!b.timestamp) return -1;
+                    return b.timestamp.toMillis() - a.timestamp.toMillis();
+                });
+
+                // Generate history list dengan data dari Firestore
+                generateHistoryList();
+                
+                // Update stats summary
+                updateStatsSummary();
+
+                console.log(`Loaded ${historyData.length} history items from Firestore`);
+
+            } catch (error) {
+                console.error('Error fetching history from Firestore:', error);
+                historyList.innerHTML = '<p style="text-align: center; color: var(--red-500); font-size: 0.625rem; padding: 2rem;">Gagal memuat riwayat analisis</p>';
+            }
         }
 
         // Generate specimen grid
@@ -1190,14 +1272,24 @@
         function generateHistoryList() {
             historyList.innerHTML = '';
             
+            if (historyData.length === 0) {
+                historyList.innerHTML = '<p style="text-align: center; color: var(--gray-500); font-size: 0.625rem; padding: 2rem;">Belum ada riwayat analisis</p>';
+                return;
+            }
+            
             historyData.forEach(history => {
                 const historyItem = document.createElement('div');
                 historyItem.className = 'history-item';
                 
+                // Tentukan konten image: gunakan foto jika ada, icon jika tidak
+                const imageContent = history.imageUrl 
+                    ? `<img src="${history.imageUrl}" alt="${history.food}">`
+                    : '<i class="fas fa-utensils"></i>';
+                
                 historyItem.innerHTML = `
                     <div class="history-content">
                         <div class="history-image">
-                            <i class="fas fa-history"></i>
+                            ${imageContent}
                         </div>
                         <div class="history-details">
                             <div class="history-header">
@@ -1212,7 +1304,6 @@
                             </div>
                             <div class="history-footer">
                                 <div class="history-cfu">CFU: <span>${history.cfu}</span></div>
-                                <button class="history-detail-btn">Detail →</button>
                             </div>
                         </div>
                     </div>
@@ -1220,6 +1311,20 @@
                 
                 historyList.appendChild(historyItem);
             });
+        }
+
+        // Update stats summary berdasarkan data real dari Firestore
+        function updateStatsSummary() {
+            const total = historyData.length;
+            const aman = historyData.filter(h => h.status === 'aman').length;
+            const warning = historyData.filter(h => h.status === 'warning').length;
+            const bahaya = historyData.filter(h => h.status === 'bahaya').length;
+            
+            // Update UI
+            document.querySelector('.stat-value.total').textContent = total;
+            document.querySelector('.stat-value.aman').textContent = aman;
+            document.querySelector('.stat-value.warning').textContent = warning;
+            document.querySelector('.stat-value.bahaya').textContent = bahaya;
         }
 
         // Setup event listeners
@@ -1284,9 +1389,9 @@
                 }
             });
             
-            // Export button
+            // Export button - export all history data
             exportBtn.addEventListener('click', function() {
-                alert('Mengekspor semua data...');
+                exportAllHistoryData();
             });
             
             // Search functionality
@@ -1358,8 +1463,162 @@
             });
         }
 
+        // Export all history data ke file
+        function exportAllHistoryData() {
+            if (historyData.length === 0) {
+                alert('Tidak ada data untuk diekspor!');
+                return;
+            }
+
+            // Get user info
+            const user = firebase.auth().currentUser;
+            const userEmail = user ? user.email : 'Unknown';
+
+            // Buat timestamp untuk file
+            const now = new Date();
+            const fileDate = now.toISOString().slice(0, 10).replace(/-/g, '');
+            const fileTime = now.toTimeString().slice(0, 8).replace(/:/g, '');
+
+            // Hitung statistik
+            const total = historyData.length;
+            const aman = historyData.filter(h => h.status === 'aman').length;
+            const warning = historyData.filter(h => h.status === 'warning').length;
+            const bahaya = historyData.filter(h => h.status === 'bahaya').length;
+
+            // Buat konten export
+            let exportContent = `
+╔════════════════════════════════════════════════════════════════╗
+║           LAPORAN RIWAYAT ANALISIS MIKROBIOLOGI               ║
+║                    BioLens Database Export                     ║
+╚════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ INFORMASI EXPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+User Email        : ${userEmail}
+Tanggal Export    : ${now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+Waktu Export      : ${now.toLocaleTimeString('id-ID')}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RINGKASAN STATISTIK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Total Analisis    : ${total}
+Status Aman       : ${aman} (${total > 0 ? ((aman/total)*100).toFixed(1) : 0}%)
+Status Warning    : ${warning} (${total > 0 ? ((warning/total)*100).toFixed(1) : 0}%)
+Status Bahaya     : ${bahaya} (${total > 0 ? ((bahaya/total)*100).toFixed(1) : 0}%)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ RIWAYAT ANALISIS (${total} Items)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+`;
+
+            // Tambahkan setiap history item
+            historyData.forEach((history, index) => {
+                const statusIcon = history.status === 'bahaya' ? '⚠️' : 
+                                 history.status === 'warning' ? '⚡' : '✓';
+                
+                exportContent += `
+${index + 1}. ${history.food}
+   ├─ Status         : ${statusIcon} ${history.status.toUpperCase()}
+   ├─ CFU            : ${history.cfu}
+   ├─ Tanggal        : ${history.date}
+   ├─ Waktu          : ${history.time}
+   └─ ID             : ${history.id}
+`;
+
+                // Tambahkan detail hasil jika ada
+                if (history.fullData && history.fullData.results) {
+                    const results = history.fullData.results;
+                    
+                    if (results.confidence) {
+                        exportContent += `      Confidence    : ${results.confidence}%\n`;
+                    }
+
+                    if (results.bacteria && results.bacteria.length > 0) {
+                        exportContent += `      Bakteri Teridentifikasi:\n`;
+                        results.bacteria.forEach(bacteria => {
+                            exportContent += `      - ${bacteria.name} (${bacteria.scientific})\n`;
+                            exportContent += `        CFU: ${bacteria.cfu}, Confidence: ${bacteria.confidence}%\n`;
+                        });
+                    }
+
+                    if (results.treatment) {
+                        exportContent += `      Rekomendasi UV:\n`;
+                        exportContent += `      - Dosis: ${results.treatment.dose} mJ/cm²\n`;
+                        exportContent += `      - Durasi: ${results.treatment.duration} menit\n`;
+                        exportContent += `      - Reduksi: ${results.treatment.reduction}%\n`;
+                    }
+                }
+
+                exportContent += `\n`;
+            });
+
+            // Footer
+            exportContent += `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ CATATAN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Data ini diekspor dari BioLens Database System.
+Untuk informasi lebih lanjut, hubungi tim BioLens.
+
+Status:
+✓ AMAN    - CFU ≤ 30, tidak ada bahaya
+⚡ WARNING - CFU 31-100, perlu perhatian
+⚠️ BAHAYA  - CFU > 100, berbahaya
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+© ${now.getFullYear()} BioLens - Smart UV Sterilization System
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+
+            // Buat blob dan download
+            const blob = new Blob([exportContent], { type: 'text/plain;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `BioLens_History_Export_${fileDate}_${fileTime}.txt`;
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+            // Visual feedback
+            const originalContent = exportBtn.innerHTML;
+            exportBtn.innerHTML = '<i class="fas fa-check"></i> Berhasil Diekspor!';
+            exportBtn.style.background = 'var(--green-600)';
+            
+            setTimeout(() => {
+                exportBtn.innerHTML = originalContent;
+                exportBtn.style.background = '';
+            }, 2000);
+
+            console.log(`Exported ${historyData.length} history items`);
+        }
+
         // Initialize the application
-        document.addEventListener('DOMContentLoaded', initializeUI);
+        document.addEventListener('DOMContentLoaded', () => {
+            // Wait for Firebase auth state
+            firebase.auth().onAuthStateChanged((user) => {
+                if (user) {
+                    // User is signed in, initialize UI
+                    initializeUI();
+                } else {
+                    // User is not signed in, still initialize basic UI
+                    generateSpecimenGrid();
+                    generatePathogenList();
+                    updateNavigation();
+                    setupEventListeners();
+                    
+                    // Show message in history section
+                    historyList.innerHTML = '<p style="text-align: center; color: var(--gray-500); font-size: 0.625rem; padding: 2rem;">Silakan login untuk melihat riwayat analisis</p>';
+                }
+            });
+        });
     </script>
 </body>
 </html>

@@ -847,27 +847,6 @@
                     </div>
                 </div>
 
-                <!-- Focus Control -->
-                <div>
-                    <div class="slider-header">
-                        <span class="slider-label">
-                            <i class="fas fa-crosshairs"></i>
-                            Mode Fokus
-                        </span>
-                    </div>
-                    <div class="grid-2" style="margin-bottom: 0.5rem;">
-                        <button class="btn-mode active" id="focusAutoBtn">Auto</button>
-                        <button class="btn-mode" id="focusManualBtn">Manual</button>
-                    </div>
-                    <div id="focusManualControl" style="display: none;">
-                        <div class="slider-header">
-                            <span class="slider-label">Nilai Fokus</span>
-                            <span class="slider-value" id="focusValue">50</span>
-                        </div>
-                        <input type="range" min="0" max="100" value="50" class="slider" id="focusSlider">
-                    </div>
-                </div>
-
                 <!-- Brightness -->
                 <div class="slider-container">
                     <div class="slider-header">
@@ -897,20 +876,10 @@
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="grid-3">
-                    <button class="btn-action blue" id="captureBtn">
-                        <i class="fas fa-camera"></i>
-                        <span class="btn-label">Capture</span>
-                    </button>
-                    <button class="btn-action gray" id="aiToggleBtn">
-                        <span>🤖</span>
-                        <span class="btn-label">AI OFF</span>
-                    </button>
-                    <button class="btn-action blue" id="saveBtn">
-                        <span>💾</span>
-                        <span class="btn-label">Save</span>
-                    </button>
-                </div>
+                <button class="btn-action blue" id="captureBtn" style="width: 100%;">
+                    <i class="fas fa-camera"></i>
+                    <span class="btn-label">Capture</span>
+                </button>
     <!-- Bottom Navigation -->
     <nav class="bottom-nav">
         <div class="nav-container">
@@ -946,11 +915,8 @@
         let uvIntensity = 85;
         let chamberTemp = 25;
         let powerOutput = 0;
-        let focusMode = 'auto';
-        let focusValue = 50;
         let brightness = 70;
         let zoom = 400;
-        let aiEnabled = false;
         let uvInterval = null;
 
         // DOM Elements
@@ -968,28 +934,19 @@
         const uvStartBtn = document.getElementById('uvStartBtn');
         const uvStopBtn = document.getElementById('uvStopBtn');
         const sosBtn = document.getElementById('sosBtn');
-        const focusAutoBtn = document.getElementById('focusAutoBtn');
-        const focusManualBtn = document.getElementById('focusManualBtn');
-        const focusManualControl = document.getElementById('focusManualControl');
-        const focusValueEl = document.getElementById('focusValue');
-        const focusSliderEl = document.getElementById('focusSlider');
         const brightnessValueEl = document.getElementById('brightnessValue');
         const brightnessSliderEl = document.getElementById('brightnessSlider');
         const zoomValueEl = document.getElementById('zoomValue');
         const zoomSliderEl = document.getElementById('zoomSlider');
         const captureBtn = document.getElementById('captureBtn');
-        const aiToggleBtn = document.getElementById('aiToggleBtn');
-        const saveBtn = document.getElementById('saveBtn');
 
         // Initialize UI
         function initializeUI() {
             updateUVStatus();
             updateDoorStatus();
             updateUVIntensity();
-            updateFocusMode();
             updateBrightness();
             updateZoom();
-            updateAIStatus();
         }
 
         // UV Chamber Functions
@@ -998,8 +955,13 @@
             uvStatusEl.className = `status-badge ${uvStatus === 'active' ? 'active' : 'ready'}`;
             
             // Update button states
-            uvStartBtn.disabled = uvStatus === 'active' || !doorLocked;
+            // START button: disabled saat proses aktif, enabled saat ready
+            uvStartBtn.disabled = uvStatus === 'active';
+            
+            // STOP button: enabled saat proses aktif, disabled saat ready
             uvStopBtn.disabled = uvStatus !== 'active';
+            
+            // Intensity slider: disabled saat proses aktif
             uvIntensitySliderEl.disabled = uvStatus === 'active';
         }
 
@@ -1042,7 +1004,7 @@
         }
         
         function startUVProcess() {
-            if ((uvStatus === 'ready' || uvStatus === 'paused') && doorLocked) {
+            if (uvStatus === 'ready' || uvStatus === 'paused') {
                 // Stop any existing monitoring and timers
                 if (uvInterval) {
                     clearInterval(uvInterval);
@@ -1050,12 +1012,13 @@
                 }
                 stopMonitoring();
                 
-                // Reset all UI elements to 0
+                // Reset semua nilai monitoring ke 0
                 document.getElementById('humidityValue').textContent = '0%';
-                document.getElementById('ethanolValue').textContent = '0.0ppm';
+                document.getElementById('ethanolValue').textContent = '0ppm';
                 document.getElementById('co2Value').textContent = '0ppm';
-                document.getElementById('coValue').textContent = '0.0ppm';
+                document.getElementById('coValue').textContent = '0ppm';
                 document.getElementById('powerOutput').textContent = '0W';
+                document.getElementById('chamberTemp').textContent = '0°C';
                 
                 // Reset status indicators
                 document.getElementById('humidityStatus').textContent = 'Normal';
@@ -1065,38 +1028,35 @@
                 document.getElementById('powerStatus').textContent = 'Idle';
                 document.getElementById('tempStatus').textContent = 'Standby';
                 
-                // Reset all variables
+                // Reset classes
+                const statusElements = document.querySelectorAll('.monitoring-status, .power-status');
+                statusElements.forEach(el => {
+                    el.className = el.className.split(' ')[0]; // Keep only the base class
+                });
+                
+                // Reset variables
                 uvStatus = 'active';
                 powerOutput = 0;
-                chamberTemp = 25;
+                chamberTemp = 0;
                 uvTimer = '03:30';
                 uvProgress = 0;
                 
-                // Update status indicators to initial state
-                document.getElementById('powerStatus').textContent = 'Normal';
-                document.getElementById('tempStatus').textContent = 'Optimal';
-                document.getElementById('humidityStatus').textContent = 'Normal';
-                document.getElementById('ethanolStatus').textContent = 'Aman';
-                document.getElementById('co2Status').textContent = 'Normal';
-                document.getElementById('coStatus').textContent = 'Aman';
-                
                 // Reset progress bar
-                document.querySelector('.progress-bar').style.width = '0%';
+                uvProgressValueEl.textContent = '0%';
+                uvProgressFillEl.style.width = '0%';
                 
                 // Update UI
                 updateUVStatus();
                 updateMonitoring();
-                updateProgress();
                 
-                // Start monitoring updates with fresh interval
-                startMonitoring();
+                // Start monitoring updates - nilai random akan mulai berjalan
+                setTimeout(() => {
+                    startMonitoring();
+                }, 500); // Delay 500ms agar user melihat nilai 0 dulu
                 
                 // Start timer simulation
                 if (uvInterval) clearInterval(uvInterval);
                 uvInterval = setInterval(updateUVTimer, 1000);
-                
-                // Force an immediate update of monitoring values
-                updateMonitoringValues();
             }
         }
 
@@ -1120,14 +1080,17 @@
                     uvInterval = null;
                 }
                 
-                // Stop monitoring updates
+                // Stop monitoring updates - nilai akan berhenti di posisi saat ini
                 stopMonitoring();
                 
-                // Update status to paused
-                uvStatus = 'paused';
+                // Update status to ready (siap untuk di-start lagi)
+                uvStatus = 'ready';
                 
                 // Update UI
                 updateUVStatus();
+                
+                // Reset timer display
+                uvTimerEl.textContent = '00:00';
             }
         }
 
@@ -1166,18 +1129,6 @@
         }
 
         // Microscope Functions
-        function updateFocusMode() {
-            if (focusMode === 'auto') {
-                focusAutoBtn.classList.add('active');
-                focusManualBtn.classList.remove('active');
-                focusManualControl.style.display = 'none';
-            } else {
-                focusAutoBtn.classList.remove('active');
-                focusManualBtn.classList.add('active');
-                focusManualControl.style.display = 'block';
-            }
-        }
-
         function updateBrightness() {
             brightnessValueEl.textContent = `${brightness}%`;
             brightnessSliderEl.value = brightness;
@@ -1194,11 +1145,6 @@
             console.log(`Zoom set to ${zoom}x`);
         }
 
-        function updateAIStatus() {
-            aiToggleBtn.className = `btn-action ${aiEnabled ? 'green' : 'gray'}`;
-            aiToggleBtn.querySelector('.btn-label').textContent = `AI ${aiEnabled ? 'ON' : 'OFF'}`;
-        }
-
         // Event Listeners
         uvStartBtn.addEventListener('click', startUVProcess);
         uvStopBtn.addEventListener('click', stopUVProcess);
@@ -1210,21 +1156,6 @@
         uvIntensitySliderEl.addEventListener('input', (e) => {
             uvIntensity = parseInt(e.target.value);
             updateUVIntensity();
-        });
-
-        focusAutoBtn.addEventListener('click', () => {
-            focusMode = 'auto';
-            updateFocusMode();
-        });
-
-        focusManualBtn.addEventListener('click', () => {
-            focusMode = 'manual';
-            updateFocusMode();
-        });
-
-        focusSliderEl.addEventListener('input', (e) => {
-            focusValue = parseInt(e.target.value);
-            focusValueEl.textContent = focusValue;
         });
 
         brightnessSliderEl.addEventListener('input', (e) => {
@@ -1278,15 +1209,6 @@
                 captureBtn.innerHTML = originalText;
                 captureBtn.classList.remove('capture-success');
             }, 2000);
-        });
-
-        aiToggleBtn.addEventListener('click', () => {
-            aiEnabled = !aiEnabled;
-            updateAIStatus();
-        });
-
-        saveBtn.addEventListener('click', () => {
-            alert('Settings saved successfully!');
         });
 
         // Navigation
@@ -1417,13 +1339,15 @@
         }
 
         // Initialize all values to 0
+        // Fungsi ini dipanggil saat halaman pertama kali dimuat
         function initializeAllValues() {
             // Reset all monitoring values to 0
             document.getElementById('humidityValue').textContent = '0%';
-            document.getElementById('ethanolValue').textContent = '0.0ppm';
+            document.getElementById('ethanolValue').textContent = '0ppm';
             document.getElementById('co2Value').textContent = '0ppm';
-            document.getElementById('coValue').textContent = '0.0ppm';
+            document.getElementById('coValue').textContent = '0ppm';
             document.getElementById('powerOutput').textContent = '0W';
+            document.getElementById('chamberTemp').textContent = '0°C';
             
             // Reset status indicators
             document.getElementById('humidityStatus').textContent = 'Normal';
@@ -1440,13 +1364,14 @@
             });
             
             // Reset all variables
-            chamberTemp = 25;
+            chamberTemp = 0;
             powerOutput = 0;
             uvStatus = 'ready';
             uvProgress = 0;
             uvTimer = '00:00';
             
             // Update UI
+            uvTimerEl.textContent = '00:00';
             updateMonitoring();
             updateUVStatus();
             updateProgress();
@@ -1510,8 +1435,8 @@
                 temperatureValue.textContent = `${temperatureSlider.value}°C`;
             }
 
-            // Start monitoring on page load
-            startMonitoring();
+            // TIDAK auto-start monitoring - monitoring hanya jalan saat user klik START
+            // startMonitoring(); <- DIHAPUS
         });
     </script>
 </body>

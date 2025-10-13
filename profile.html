@@ -132,12 +132,35 @@
         .profile-avatar {
             background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(8px);
-            padding: 0.75rem;
             border-radius: 50%;
+            width: 3.5rem;
+            height: 3.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            padding: 0.75rem;
+        }
+
+        /* Hapus padding saat ada foto */
+        .profile-avatar.has-photo {
+            padding: 0;
         }
 
         .profile-avatar i {
             font-size: 1.5rem;
+        }
+
+        /* Foto profile mengisi seluruh container */
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
         .profile-info {
@@ -171,20 +194,6 @@
             display: flex;
             align-items: center;
             gap: 0.25rem;
-        }
-
-        .profile-edit {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 0.5rem;
-            border-radius: 0.5rem;
-            border: none;
-            color: white;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .profile-edit:hover {
-            background: rgba(255, 255, 255, 0.3);
         }
 
         .profile-stats {
@@ -634,6 +643,7 @@
             border: none;
             background: transparent;
             cursor: pointer;
+            text-decoration: none;
         }
 
         .nav-btn.active {
@@ -686,30 +696,27 @@
 
         <div class="profile-card">
             <div class="profile-header">
-                <div class="profile-avatar">
+                <div class="profile-avatar" id="profileAvatar">
                     <i class="fas fa-user"></i>
                 </div>
                 <div class="profile-info">
-                    <div class="profile-name">Sarah Larasati</div>
+                    <div class="profile-name">ㅤ</div>
                     <div class="profile-role">Operator</div>
-                    <div class="profile-email">larasatisarah427@gmail.com</div>
+                    <div class="profile-email">ㅤ</div>
                     <div class="profile-location">
                         <span>📍</span>
                         Dapur MBG - Diamond
                     </div>
                 </div>
-                <button class="profile-edit">
-                    <i class="fas fa-camera"></i>
-                </button>
             </div>
             <div class="profile-stats">
                 <div class="stat-item">
                     <div class="stat-label">Total Scan</div>
-                    <div class="stat-value">156</div>
+                    <div class="stat-value" id="totalScanValue">0</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-label">Akurasi</div>
-                    <div class="stat-value">96.5%</div>
+                    <div class="stat-value" id="accuracyValue">0%</div>
                 </div>
             </div>
         </div>
@@ -907,12 +914,107 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
     <script src="firebase/config.js"></script>
     <script>
         // State variables
-        let language = 'id';
+        let language = localStorage.getItem('language') || 'id';
         let theme = 'light';
         let notifications = true;
+
+        // Translation object untuk multi-language support
+        const translations = {
+            id: {
+                pageTitle: 'Profile & Settings',
+                pageSubtitle: 'Kelola akun dan perangkat',
+                profileRole: 'Operator',
+                profileLocation: 'Dapur MBG - Diamond',
+                statScan: 'Total Scan',
+                statAccuracy: 'Akurasi',
+                deviceStatus: 'Status Perangkat',
+                deviceCamera: 'Smart Microscope',
+                deviceCameraHealth: 'Health: 98%',
+                deviceUV: 'UV Chamber',
+                deviceUVLife: 'Lamp Life: 87%',
+                deviceWifi: 'Koneksi',
+                deviceWifiSignal: 'Signal: strong',
+                statusConnected: 'CONNECTED',
+                statusGood: 'GOOD',
+                statusOnline: 'ONLINE',
+                btnCalibration: 'Calibration & Maintenance',
+                settingsTitle: 'Pengaturan',
+                settingLanguage: 'Bahasa',
+                settingLanguageDesc: 'Language',
+                settingTheme: 'Tema',
+                settingThemeDesc: 'Theme',
+                settingNotification: 'Notifikasi',
+                settingNotificationDesc: 'Push notifications',
+                menuSchedule: 'Jadwal Kalibrasi',
+                menuLog: 'Log Aktivitas',
+                menuGuide: 'Panduan & Tutorial',
+                menuSupport: 'Bantuan & Dukungan',
+                aboutTitle: 'Tentang Aplikasi',
+                aboutVersion: 'Versi:',
+                aboutBuild: 'Build:',
+                aboutDeveloper: 'Dikembangkan oleh:',
+                aboutDevTeam: 'Tim Bio-Lens',
+                btnPrivacy: 'Privacy Policy',
+                btnTerms: 'Terms of Use',
+                btnLogout: 'Keluar',
+                navHome: 'Home',
+                navControl: 'Kontrol',
+                navAnalysis: 'Analisis',
+                navDatabase: 'Database',
+                navProfile: 'Profile',
+                confirmLogout: 'Apakah Anda yakin ingin keluar?',
+                errorLogout: 'Terjadi kesalahan saat mencoba keluar. Silakan coba lagi.'
+            },
+            en: {
+                pageTitle: 'Profile & Settings',
+                pageSubtitle: 'Manage account and devices',
+                profileRole: 'Operator',
+                profileLocation: 'Kitchen MBG - Diamond',
+                statScan: 'Total Scan',
+                statAccuracy: 'Accuracy',
+                deviceStatus: 'Device Status',
+                deviceCamera: 'Smart Microscope',
+                deviceCameraHealth: 'Health: 98%',
+                deviceUV: 'UV Chamber',
+                deviceUVLife: 'Lamp Life: 87%',
+                deviceWifi: 'Connection',
+                deviceWifiSignal: 'Signal: strong',
+                statusConnected: 'CONNECTED',
+                statusGood: 'GOOD',
+                statusOnline: 'ONLINE',
+                btnCalibration: 'Calibration & Maintenance',
+                settingsTitle: 'Settings',
+                settingLanguage: 'Language',
+                settingLanguageDesc: 'Language',
+                settingTheme: 'Theme',
+                settingThemeDesc: 'Theme',
+                settingNotification: 'Notifications',
+                settingNotificationDesc: 'Push notifications',
+                menuSchedule: 'Calibration Schedule',
+                menuLog: 'Activity Log',
+                menuGuide: 'Guide & Tutorial',
+                menuSupport: 'Help & Support',
+                aboutTitle: 'About App',
+                aboutVersion: 'Version:',
+                aboutBuild: 'Build:',
+                aboutDeveloper: 'Developed by:',
+                aboutDevTeam: 'Bio-Lens Team',
+                btnPrivacy: 'Privacy Policy',
+                btnTerms: 'Terms of Use',
+                btnLogout: 'Logout',
+                navHome: 'Home',
+                navControl: 'Control',
+                navAnalysis: 'Analysis',
+                navDatabase: 'Database',
+                navProfile: 'Profile',
+                confirmLogout: 'Are you sure you want to logout?',
+                errorLogout: 'An error occurred while trying to logout. Please try again.'
+            }
+        };
 
         // DOM Elements
         const languageSelect = document.getElementById('languageSelect');
@@ -920,20 +1022,211 @@
         const notificationToggle = document.getElementById('notificationToggle');
         const logoutBtn = document.getElementById('logoutBtn');
         const menuItems = document.querySelectorAll('.menu-item');
-        const profileEdit = document.querySelector('.profile-edit');
         const calibrationBtn = document.querySelector('.btn');
 
+        // Function untuk menerapkan bahasa ke UI
+        // Mengupdate semua teks di halaman sesuai bahasa yang dipilih
+        function applyLanguage(lang) {
+            const t = translations[lang];
+            
+            // Update page title dan subtitle
+            document.querySelector('.header h1').innerHTML = `
+                <i class="fas fa-user"></i>
+                ${t.pageTitle}
+            `;
+            document.querySelector('.header p').textContent = t.pageSubtitle;
+            
+            // Update profile role (jika belum ada data dari Firestore)
+            const roleElement = document.querySelector('.profile-role');
+            if (roleElement && roleElement.textContent === 'Operator') {
+                roleElement.textContent = t.profileRole;
+            }
+            
+            // Update profile location
+            document.querySelector('.profile-location').innerHTML = `
+                <span>📍</span>
+                ${t.profileLocation}
+            `;
+            
+            // Update stats labels
+            document.querySelectorAll('.stat-label')[0].textContent = t.statScan;
+            document.querySelectorAll('.stat-label')[1].textContent = t.statAccuracy;
+            
+            // Update device status section
+            document.querySelectorAll('.card-title')[0].innerHTML = `
+                <i class="fas fa-wave-square"></i>
+                ${t.deviceStatus}
+            `;
+            
+            // Update device names dan details
+            document.querySelectorAll('.device-name')[0].textContent = t.deviceCamera;
+            document.querySelectorAll('.device-meta')[0].textContent = t.deviceCameraHealth;
+            document.querySelectorAll('.device-name')[1].textContent = t.deviceUV;
+            document.querySelectorAll('.device-meta')[1].textContent = t.deviceUVLife;
+            document.querySelectorAll('.device-name')[2].textContent = t.deviceWifi;
+            document.querySelectorAll('.device-meta')[2].textContent = t.deviceWifiSignal;
+            
+            // Update device status badges
+            document.querySelectorAll('.device-status')[0].textContent = t.statusConnected;
+            document.querySelectorAll('.device-status')[1].textContent = t.statusGood;
+            document.querySelectorAll('.device-status')[2].textContent = t.statusOnline;
+            
+            // Update calibration button
+            calibrationBtn.innerHTML = `
+                <i class="fas fa-tools"></i>
+                <span>${t.btnCalibration}</span>
+            `;
+            
+            // Update settings section
+            document.querySelectorAll('.card-title')[1].innerHTML = `
+                <i class="fas fa-globe"></i>
+                ${t.settingsTitle}
+            `;
+            
+            // Update setting labels
+            document.querySelectorAll('.setting-name')[0].textContent = t.settingLanguage;
+            document.querySelectorAll('.setting-description')[0].textContent = t.settingLanguageDesc;
+            document.querySelectorAll('.setting-name')[1].textContent = t.settingTheme;
+            document.querySelectorAll('.setting-description')[1].textContent = t.settingThemeDesc;
+            document.querySelectorAll('.setting-name')[2].textContent = t.settingNotification;
+            document.querySelectorAll('.setting-description')[2].textContent = t.settingNotificationDesc;
+            
+            // Update menu items
+            document.querySelectorAll('.menu-text')[0].textContent = t.menuSchedule;
+            document.querySelectorAll('.menu-text')[1].textContent = t.menuLog;
+            document.querySelectorAll('.menu-text')[2].textContent = t.menuGuide;
+            document.querySelectorAll('.menu-text')[3].textContent = t.menuSupport;
+            
+            // Update about section
+            document.querySelectorAll('.card-title')[2].innerHTML = `
+                <i class="fas fa-shield-alt"></i>
+                ${t.aboutTitle}
+            `;
+            
+            document.querySelectorAll('.about-item')[0].innerHTML = `<span>${t.aboutVersion}</span> 1.0.0`;
+            document.querySelectorAll('.about-item')[1].innerHTML = `<span>${t.aboutBuild}</span> 2025.10.01`;
+            document.querySelectorAll('.about-item')[2].innerHTML = `<span>${t.aboutDeveloper}</span> ${t.aboutDevTeam}`;
+            
+            // Update about buttons
+            document.querySelectorAll('.about-btn')[0].textContent = t.btnPrivacy;
+            document.querySelectorAll('.about-btn')[1].textContent = t.btnTerms;
+            
+            // Update logout button
+            logoutBtn.innerHTML = `
+                <i class="fas fa-sign-out-alt"></i>
+                ${t.btnLogout}
+            `;
+            
+            // Update navigation labels
+            document.querySelectorAll('.nav-label')[0].textContent = t.navHome;
+            document.querySelectorAll('.nav-label')[1].textContent = t.navControl;
+            document.querySelectorAll('.nav-label')[2].textContent = t.navAnalysis;
+            document.querySelectorAll('.nav-label')[3].textContent = t.navDatabase;
+            document.querySelectorAll('.nav-label')[4].textContent = t.navProfile;
+        }
+
         // Initialize UI
-        function initializeUI() {
+        function initializeUI(user) {
             updateNavigation();
             setupEventListeners();
+            loadUserProfile(user);
+            applyLanguage(language); // Apply saved language
+        }
+
+        // Load user profile from Firestore
+        // Mengambil data user dari Firestore berdasarkan UID
+        async function loadUserProfile(user) {
+            try {
+                if (!user) {
+                    console.log('No user provided');
+                    return;
+                }
+
+                // Fetch user data from Firestore collection 'users'
+                const userDoc = await firebase.firestore()
+                    .collection('users')
+                    .doc(user.uid)
+                    .get();
+
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    
+                    // Update profile photo dari photoURL di Firestore
+                    const avatarElement = document.getElementById('profileAvatar');
+                    if (avatarElement && userData.photoURL) {
+                        // Hapus icon default
+                        avatarElement.innerHTML = '';
+                        
+                        // Tambah class untuk menghilangkan padding
+                        avatarElement.classList.add('has-photo');
+                        
+                        // Buat img element untuk menampilkan foto
+                        const img = document.createElement('img');
+                        img.src = userData.photoURL;
+                        img.alt = userData.displayName || 'Profile Photo';
+                        
+                        // Handle error jika gambar gagal dimuat
+                        img.onerror = function() {
+                            // Jika foto gagal dimuat, tampilkan icon default
+                            avatarElement.classList.remove('has-photo');
+                            avatarElement.innerHTML = '<i class="fas fa-user"></i>';
+                        };
+                        
+                        avatarElement.appendChild(img);
+                    }
+                    
+                    // Update display name dari Firestore
+                    const displayNameElement = document.querySelector('.profile-name');
+                    if (displayNameElement && userData.displayName) {
+                        displayNameElement.textContent = userData.displayName;
+                    }
+
+                    // Update email dari Firestore
+                    const emailElement = document.querySelector('.profile-email');
+                    if (emailElement && userData.email) {
+                        emailElement.textContent = userData.email;
+                    }
+
+                    // Update profile role jika tersedia di Firestore
+                    const roleElement = document.querySelector('.profile-role');
+                    if (roleElement && userData.role) {
+                        roleElement.textContent = userData.role;
+                    }
+
+                    // Update stats dari Firestore
+                    // Total Scan - menampilkan jumlah total scan yang dilakukan user
+                    const totalScanElement = document.getElementById('totalScanValue');
+                    if (totalScanElement) {
+                        const totalScan = userData.totalScan || 0;
+                        totalScanElement.textContent = totalScan;
+                    }
+
+                    // Akurasi - menampilkan akurasi rata-rata dari semua scan
+                    const accuracyElement = document.getElementById('accuracyValue');
+                    if (accuracyElement) {
+                        const accuracy = userData.accuracy || 0;
+                        accuracyElement.textContent = `${accuracy}%`;
+                    }
+
+                    console.log('User profile loaded successfully from Firestore');
+                } else {
+                    console.log('User document not found in Firestore');
+                }
+            } catch (error) {
+                console.error('Error loading user profile:', error);
+            }
         }
 
         // Setup event listeners
         function setupEventListeners() {
-            // Language select
+            // Set language select value dari localStorage
+            languageSelect.value = language;
+            
+            // Language select - simpan pilihan dan terapkan ke UI
             languageSelect.addEventListener('change', function(e) {
                 language = e.target.value;
+                localStorage.setItem('language', language); // Simpan ke localStorage
+                applyLanguage(language); // Terapkan bahasa baru
                 console.log('Language changed to:', language);
             });
 
@@ -952,14 +1245,15 @@
 
             // Logout button
             logoutBtn.addEventListener('click', function() {
-                if (confirm('Apakah Anda yakin ingin keluar?')) {
+                const t = translations[language]; // Get current language translations
+                if (confirm(t.confirmLogout)) {
                     // Sign out from Firebase
                     firebase.auth().signOut().then(() => {
                         // Redirect to login page after successful logout
                         window.location.href = 'login.html';
                     }).catch((error) => {
                         console.error('Logout error:', error);
-                        alert('Terjadi kesalahan saat mencoba keluar. Silakan coba lagi.');
+                        alert(t.errorLogout);
                     });
                 }
             });
@@ -972,10 +1266,6 @@
                 });
             });
 
-            // Profile edit
-            profileEdit.addEventListener('click', function() {
-                alert('Fitur edit foto profil akan segera hadir!');
-            });
 
             // Calibration button
             calibrationBtn.addEventListener('click', function() {
@@ -998,7 +1288,18 @@
         }
 
         // Initialize the application
-        document.addEventListener('DOMContentLoaded', initializeUI);
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check authentication state
+            firebase.auth().onAuthStateChanged((user) => {
+                if (user) {
+                    // User is signed in, initialize UI dengan data user
+                    initializeUI(user);
+                } else {
+                    // No user is signed in, redirect to login
+                    window.location.href = 'login.html';
+                }
+            });
+        });
     </script>
 </body>
 </html>
