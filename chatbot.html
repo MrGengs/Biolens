@@ -31,13 +31,11 @@
         }
 
         .chat-container {
-            max-width: 420px;
-            margin: 0 auto;
+            width: 100%;
             height: 100vh;
             display: flex;
             flex-direction: column;
             background-color: var(--white);
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
             position: relative;
         }
 
@@ -71,6 +69,8 @@
             /* Hide scrollbar for Chrome, Safari and Opera */
             scrollbar-width: none; /* Firefox */
             -ms-overflow-style: none;  /* IE and Edge */
+            display: flex;
+            flex-direction: column;
         }
         
         /* Hide scrollbar for Chrome, Safari and Opera */
@@ -81,10 +81,15 @@
         .message {
             margin-bottom: 1rem;
             max-width: 80%;
+            min-width: 80px;
+            width: fit-content;
             padding: 0.75rem 1rem;
             border-radius: 1rem;
             line-height: 1.4;
             position: relative;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            display: inline-block;
         }
 
         .bot-message {
@@ -94,7 +99,6 @@
             border-top-right-radius: 1rem;
             border-bottom-left-radius: 0.25rem;
             align-self: flex-start;
-            margin-right: auto;
             box-shadow: 0 2px 8px rgba(30, 136, 229, 0.15);
             border-left: 3px solid var(--primary-blue);
         }
@@ -106,9 +110,8 @@
             border-bottom-left-radius: 1rem;
             border-top-left-radius: 1rem;
             border-bottom-right-radius: 0.25rem;
-            margin-left: auto;
+            align-self: flex-end;
             box-shadow: 0 2px 8px rgba(30, 136, 229, 0.3);
-            margin-right: 0;
         }
 
         .chat-input {
@@ -129,7 +132,7 @@
         }
 
         #send-button {
-            background-color: var(--primary-teal);
+            background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
             color: white;
             border: none;
             border-radius: 50%;
@@ -139,11 +142,13 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(30, 136, 229, 0.3);
         }
 
         #send-button:hover {
-            background-color: var(--dark-teal);
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(30, 136, 229, 0.4);
         }
 
         .typing-indicator {
@@ -153,12 +158,48 @@
             font-style: italic;
         }
 
-        @media (max-width: 480px) {
-            .chat-container {
-                width: 100%;
-                height: 100vh;
-                border-radius: 0;
-            }
+        /* Suggested Prompts Styling */
+        .suggested-prompts {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            padding: 0;
+        }
+
+        .prompt-button {
+            background: white;
+            border: 2px solid var(--primary-blue);
+            color: var(--primary-blue);
+            padding: 0.65rem 1rem;
+            border-radius: 1.5rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 2px 4px rgba(30, 136, 229, 0.1);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .prompt-button:hover {
+            background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(30, 136, 229, 0.3);
+        }
+
+        .prompt-button i {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+
+        .prompt-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(30, 136, 229, 0.2);
         }
     </style>
 </head>
@@ -172,7 +213,27 @@
         </div>
         
         <div class="chat-messages" id="chat-messages">
+            <div class="message bot-message">
                 Halo! Saya asisten virtual BioLens. Ada yang bisa saya bantu tentang produk BioLens?
+            </div>
+            
+            <div class="suggested-prompts" id="suggestedPrompts">
+                <button class="prompt-button" onclick="sendPrompt('Apa itu BioLens?')">
+                    <i class="fas fa-question-circle"></i>
+                    Apa itu BioLens?
+                </button>
+                <button class="prompt-button" onclick="sendPrompt('Apa saja fitur-fitur BioLens?')">
+                    <i class="fas fa-star"></i>
+                    Apa saja fitur-fitur BioLens?
+                </button>
+                <button class="prompt-button" onclick="sendPrompt('Bagaimana cara kerja BioLens?')">
+                    <i class="fas fa-cog"></i>
+                    Bagaimana cara kerja BioLens?
+                </button>
+                <button class="prompt-button" onclick="sendPrompt('Berapa harga BioLens?')">
+                    <i class="fas fa-tag"></i>
+                    Berapa harga BioLens?
+                </button>
             </div>
         </div>
         
@@ -290,6 +351,12 @@
             const typingIndicator = document.getElementById('typing-indicator');
             
             if (message === '') return;
+            
+            // Sembunyikan suggested prompts setelah user mengirim pesan pertama
+            const suggestedPrompts = document.getElementById('suggestedPrompts');
+            if (suggestedPrompts) {
+                suggestedPrompts.style.display = 'none';
+            }
             
             // Tampilkan pesan pengguna (tanpa format markdown)
             const userMessageDiv = document.createElement('div');
@@ -421,6 +488,17 @@
             if (event.key === 'Enter') {
                 sendMessage();
             }
+        }
+
+        // Fungsi untuk mengirim prompt yang dipilih
+        // Mengisi input dengan teks prompt dan mengirimnya ke AI
+        function sendPrompt(promptText) {
+            // Set value input dengan prompt text
+            const userInput = document.getElementById('user-input');
+            userInput.value = promptText;
+            
+            // Kirim pesan (suggested prompts akan otomatis hilang dari fungsi sendMessage)
+            sendMessage();
         }
 
         // Inisialisasi chat

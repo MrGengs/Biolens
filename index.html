@@ -143,34 +143,57 @@
         }
 
         .feature {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 1.5rem;
-            border-radius: 0.75rem;
+            background: var(--white);
+            padding: 2rem 1.5rem;
+            border-radius: 1rem;
             flex: 1 1 200px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: transform 0.3s ease;
+            border: 1px solid var(--gray-200);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
         .feature:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(13, 148, 136, 0.15), 0 10px 10px -5px rgba(13, 148, 136, 0.1);
+            border-color: var(--primary);
+        }
+
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 16px -4px rgba(13, 148, 136, 0.3);
+        }
+
+        .feature:hover .feature-icon {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 12px 24px -4px rgba(13, 148, 136, 0.4);
         }
 
         .feature i {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
+            font-size: 2rem;
             color: var(--white);
         }
 
         .feature h3 {
-            margin-bottom: 0.5rem;
-            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gray-900);
         }
 
         .feature p {
-            font-size: 0.9rem;
-            opacity: 0.9;
-            line-height: 1.5;
+            font-size: 0.95rem;
+            color: var(--gray-700);
+            line-height: 1.6;
+            margin: 0;
         }
 
         @keyframes pulse {
@@ -219,19 +242,25 @@
     
     <div class="features">
         <div class="feature">
-            <i class="fas fa-bolt"></i>
+            <div class="feature-icon">
+                <i class="fas fa-bolt"></i>
+            </div>
             <h3>Cepat</h3>
             <p>Analisis bakteri dalam hitungan detik dengan teknologi AI terbaru</p>
         </div>
         
         <div class="feature">
-            <i class="fas fa-shield-alt"></i>
+            <div class="feature-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
             <h3>Aman</h3>
             <p>Memastikan keamanan pangan dengan akurasi tinggi</p>
         </div>
         
         <div class="feature">
-            <i class="fas fa-mobile-alt"></i>
+            <div class="feature-icon">
+                <i class="fas fa-mobile-alt"></i>
+            </div>
             <h3>Mudah Digunakan</h3>
             <p>Antarmuka yang sederhana dan mudah dipahami</p>
         </div>
