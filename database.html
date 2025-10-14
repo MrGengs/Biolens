@@ -195,19 +195,41 @@
             margin-bottom: 0.75rem;
         }
 
-        .search-input {
-            width: 100%;
-            padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+        /* Search box - flexbox container for icon and input */
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
             border: 1px solid var(--gray-300);
             border-radius: 0.5rem;
-            font-size: 0.625rem;
-            outline: none;
+            padding: 0.5rem;
             transition: all 0.2s;
         }
 
-        .search-input:focus {
+        .search-box:focus-within {
             border-color: var(--blue-500);
             box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Search icon styling */
+        .search-icon {
+            color: var(--gray-400);
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 0.625rem;
+            color: var(--gray-800);
+            background: transparent;
+            padding: 0;
+        }
+
+        .search-input::placeholder {
+            color: var(--gray-400);
         }
 
         /* Card Styles */
