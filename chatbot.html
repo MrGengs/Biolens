@@ -151,13 +151,6 @@
             box-shadow: 0 4px 12px rgba(30, 136, 229, 0.4);
         }
 
-        .typing-indicator {
-            display: none;
-            margin-bottom: 1rem;
-            color: var(--dark-gray);
-            font-style: italic;
-        }
-
         /* Suggested Prompts Styling */
         .suggested-prompts {
             display: flex;
@@ -234,15 +227,7 @@
                     <i class="fas fa-cog"></i>
                     Bagaimana cara kerja BioLens?
                 </button>
-                <button class="prompt-button" onclick="sendPrompt('Berapa harga BioLens?')">
-                    <i class="fas fa-tag"></i>
-                    Berapa harga BioLens?
-                </button>
             </div>
-        </div>
-        
-        <div class="typing-indicator" id="typing-indicator">
-            BioLens AI sedang mengetik...
         </div>
         
         <div class="chat-input">
@@ -300,8 +285,6 @@
                   * Panel kontrol operasi jarak jauh
                   * Analitik penggunaan
                 
-                Harga: $99 atau Rp1.600.000 per unit dengan diskon untuk pembelian dalam jumlah besar.
-                
                 Anda akan menjawab dengan ramah, informatif, dan membantu dalam bahasa Indonesia. Jika ada pertanyaan di luar topik, jelaskan dengan sopan bahwa Anda hanya bisa membantu terkait produk Biolens.`
             }
         ];
@@ -352,7 +335,6 @@
         async function sendMessage() {
             const userInput = document.getElementById('user-input');
             const message = userInput.value.trim();
-            const typingIndicator = document.getElementById('typing-indicator');
             
             if (message === '') return;
             
@@ -369,8 +351,7 @@
             document.getElementById('chat-messages').appendChild(userMessageDiv);
             userInput.value = '';
             
-            // Tampilkan indikator mengetik
-            typingIndicator.style.display = 'block';
+            // Scroll ke bawah untuk melihat pesan terbaru
             document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
             
             try {
@@ -402,8 +383,6 @@
             } catch (error) {
                 console.error('Error:', error);
                 addMessage('Maaf, terjadi kesalahan. Silakan coba lagi nanti.');
-            } finally {
-                typingIndicator.style.display = 'none';
             }
         }
         // Fungsi untuk menghasilkan respons berdasarkan pesan pengguna
@@ -422,6 +401,32 @@
                       '• Desain ergonomis untuk staf sekolah\n' +
                       '• Antarmuka yang sederhana dan intuitif\n' +
                       '• Aplikasi seluler untuk kontrol perangkat dari jarak jauh';
+            }
+            
+            // Respons untuk cara kerja BioLens
+            if (lowerMessage.includes('cara kerja') || lowerMessage.includes('bagaimana kerja') || 
+                lowerMessage.includes('mekanisme') || lowerMessage.includes('cara bekerja') ||
+                lowerMessage.includes('bagaimana bekerja') || lowerMessage.includes('proses kerja')) {
+                return '*Mekanisme Operasional Teknologi Biolens* 🔬\n\n' +
+                       'Sistem Biolens beroperasi melalui serangkaian tahapan analitis dan penanganan yang terintegrasi untuk menilai keamanan sampel makanan, khususnya terkait kontaminasi bakteri.\n\n' +
+                       '*1. Akuisisi dan Identifikasi Sampel*\n' +
+                       'Proses diawali dengan akuisisi data mikroskopis dari sampel makanan. Sampel tersebut dipindai secara komprehensif menggunakan mikroskop beresolusi tinggi. Seluruh data bakteri yang terdeteksi dari hasil pemindaian tersebut kemudian dianalisis secara mendalam oleh perangkat lunak sistem.\n\n' +
+                       '*2. Analisis Patogenisitas (Tingkat Bahaya)*\n' +
+                       'Tahap ini merupakan inti dari evaluasi keamanan. Berdasarkan hasil pemindaian, sistem akan melakukan karakterisasi mikrobial untuk:\n' +
+                       '• Mengidentifikasi spesies atau jenis bakteri yang ada (identifikasi taksonomi)\n' +
+                       '• Menentukan tingkat virulensi atau patogenisitas (tingkat bahaya) dari bakteri tersebut\n\n' +
+                       '*3. Transfer dan Kontrol Penanganan*\n' +
+                       'Hasil analisis kritis mengenai tingkat bahaya bakteri selanjutnya ditransmisikan ke unit Control UV Chamber. Ruang kendali ini berfungsi sebagai pusat mitigasi untuk melakukan dekontaminasi berbasis sinar ultraviolet (UV).\n\n' +
+                       '*4. Modus Operasi Dekontaminasi*\n' +
+                       'Control UV Chamber menawarkan dua modus operasional untuk penanganan dan dekontaminasi sampel:\n\n' +
+                       '🤖 *Modus Otomatis (Autonomous Mode)*\n' +
+                       'Dalam modus ini, sistem Biolens menunjukkan kecerdasan adaptif. Berdasarkan data tingkat bahaya bakteri yang telah dianalisis, sistem akan secara mandiri (otomatis) mengkalkulasi dan menentukan dua parameter utama:\n' +
+                       '• Durasi paparan UV (UV exposure duration): Berapa lama waktu yang dibutuhkan untuk proses sterilisasi agar efektif melawan tingkat bahaya spesifik bakteri tersebut\n' +
+                       '• Aktivasi Kipas Pendingin (Cooling Fan Activation): Apakah diperlukan aktivasi kipas pendingin untuk menjaga kondisi optimal di dalam chamber\n\n' +
+                       '👤 *Modus Manual (Manual Mode)*\n' +
+                       'Dalam modus ini, kontrol operasional diserahkan kepada operator. Pengaturan seperti durasi paparan UV dan pengaktifan kipas pendingin dikonfigurasi dan dimasukkan (disetting) secara manual oleh pengguna.\n\n' +
+                       '*5. Penyimpanan Data Komprehensif*\n' +
+                       'Setelah seluruh proses penanganan (baik otomatis maupun manual) selesai, semua data terkait – mulai dari spesies bakteri, tingkat bahaya, hingga parameter dekontaminasi yang diterapkan – diabadikan dan diarsipkan ke dalam basis data (database) sistem untuk keperluan pelacakan, audit, dan referensi di masa mendatang.';
             }
             
             // Respons untuk sapa

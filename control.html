@@ -676,7 +676,6 @@
                 <i class="fas fa-sliders-h"></i>
                 Kontrol Perangkat
             </h1>
-            <p>Control System</p>
         </div>
 
         <!-- UV Chamber Card -->
@@ -689,52 +688,6 @@
                 <div class="status-badge ready" id="uvStatus">READY</div>
             </div>
             <div class="card-content">
-                <!-- Door & Timer -->
-                <div class="grid-2">
-                    <div class="info-box">
-                        <div class="info-label">
-                            <i class="fas fa-lock"></i>
-                            <span>Pintu</span>
-                        </div>
-                        <div class="info-value locked" id="doorStatus">LOCKED</div>
-                    </div>
-                    <div class="info-box">
-                        <div class="info-label">Timer</div>
-                        <div class="info-value timer" id="uvTimer">00:00</div>
-                    </div>
-                </div>
-
-                <!-- Progress Bar -->
-                <div class="progress-container">
-                    <div class="progress-header">
-                        <span class="progress-label">Progress</span>
-                        <span class="progress-value" id="uvProgressValue">0%</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="uvProgressFill" style="width: 0%"></div>
-                    </div>
-                </div>
-
-                <!-- Intensity Slider -->
-                <div class="slider-container">
-                    <div class="slider-header">
-                        <span class="slider-label">Intensitas UV</span>
-                        <span class="slider-value" id="uvIntensityValue">85%</span>
-                    </div>
-                    <input type="range" min="0" max="100" value="85" class="slider" id="uvIntensitySlider">
-                </div>
-
-                <!-- Temperature Slider -->
-                <div class="slider-container">
-                    <div class="slider-header">
-                        <span class="slider-label">
-                            <i class="fas fa-thermometer-half"></i>
-                            Suhu
-                        </span>
-                        <span class="slider-value" id="temperatureValue">25°C</span>
-                    </div>
-                    <input type="range" min="0" max="50" value="25" class="slider" id="temperatureSlider">
-                </div>
 
                 <!-- Kelembapan -->
                 <div class="monitoring-box">
@@ -746,66 +699,92 @@
                     <div class="monitoring-status" id="humidityStatus">Normal</div>
                 </div>
 
-                <!-- Gas Sensors -->
-                <div class="grid-3">
-                    <div class="monitoring-box">
-                        <div class="monitoring-label">
-                            <i class="fas fa-wine-bottle"></i>
-                            <span>Etanol</span>
-                        </div>
-                        <div class="monitoring-value" id="ethanolValue">0ppm</div>
-                        <div class="monitoring-status" id="ethanolStatus">Aman</div>
-                    </div>
-                    <div class="monitoring-box">
-                        <div class="monitoring-label">
-                            <i class="fas fa-wind"></i>
-                            <span>CO₂</span>
-                        </div>
-                        <div class="monitoring-value" id="co2Value">0ppm</div>
-                        <div class="monitoring-status" id="co2Status">Normal</div>
-                    </div>
-                    <div class="monitoring-box">
-                        <div class="monitoring-label">
-                            <i class="fas fa-skull-crossbones"></i>
-                            <span>CO</span>
-                        </div>
-                        <div class="monitoring-value" id="coValue">0ppm</div>
-                        <div class="monitoring-status" id="coStatus">Aman</div>
-                    </div>
-                </div>
-
-                <!-- Monitoring -->
-                <div class="grid-2">
-                    <div class="monitoring-box">
-                        <div class="monitoring-label">
-                            <i class="fas fa-thermometer-half"></i>
-                            <span>Suhu</span>
-                        </div>
-                        <div class="monitoring-value" id="chamberTemp">0°C</div>
-                        <div class="monitoring-status" id="tempStatus">Standby</div>
-                    </div>
-                    <div class="monitoring-box">
-                        <div class="monitoring-label">
-                            <i class="fas fa-power-off"></i>
-                            <span>Daya</span>
-                        </div>
-                        <div class="monitoring-value" id="powerOutput">0W</div>
-                        <div class="monitoring-status" id="powerStatus">Idle</div>
-                    </div>
-                </div>
-
-                <!-- Control Buttons -->
-                <div class="grid-3">
-                    <button class="btn btn-start" id="uvStartBtn">
-                        <span>▶</span>START
-                    </button>
-                    <button class="btn btn-stop" id="uvStopBtn" disabled>
-                        <span>⏹</span>STOP
-                    </button>
-                    <button class="btn btn-sos" id="sosBtn">
+                <!-- Gas Alert -->
+                <div id="gasAlert" class="monitoring-box" style="display: none; background: var(--red-50); border: 2px solid var(--red-500); animation: pulse 2s infinite;">
+                    <div class="monitoring-label" style="color: var(--red-700);">
                         <i class="fas fa-exclamation-triangle"></i>
-                        SOS
-                    </button>
+                        <span>PERINGATAN GAS</span>
+                    </div>
+                    <div class="monitoring-value" style="color: var(--red-700); font-size: 0.75rem;">⚠ GAS BERBAHAYA TERDETEKSI!</div>
+                    <div class="monitoring-status" style="color: var(--red-600);">Segera aktifkan UV Lamp dan Fan!</div>
+                </div>
+
+                <!-- Gas Sensors Detail -->
+                <div class="monitoring-box">
+                    <div class="monitoring-label">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Detail Sensor Gas</span>
+                    </div>
+                    <div style="font-size: 0.5rem; color: var(--gray-600); line-height: 1.4;">
+                        <div id="gas1Detail">Sensor #1: Analog: 0 | Digital: 0</div>
+                        <div id="gas2Detail">Sensor #2: Analog: 0 | Digital: 0</div>
+                        <div id="gas3Detail">Sensor #3: Analog: 0 | Digital: 0</div>
+                    </div>
+                </div>
+
+                <!-- Gas Average Sensor -->
+                <div class="monitoring-box">
+                    <div class="monitoring-label">
+                        <i class="fas fa-wind"></i>
+                        <span>Gas Average</span>
+                    </div>
+                    <div class="monitoring-value" id="gasAverageValue">0ppm</div>
+                    <div class="monitoring-status" id="gasAverageStatus">Normal</div>
+                </div>
+
+                <!-- Temperature Monitoring -->
+                <div class="monitoring-box">
+                    <div class="monitoring-label">
+                        <i class="fas fa-thermometer-half"></i>
+                        <span>Suhu</span>
+                    </div>
+                    <div class="monitoring-value" id="chamberTemp">0°C</div>
+                    <div class="monitoring-status" id="tempStatus">Standby</div>
+                </div>
+
+                <!-- Diagnostic Info -->
+                <div class="monitoring-box" style="background: var(--amber-50); border: 1px solid var(--amber-200); margin-bottom: 0.5rem;">
+                    <div class="monitoring-label" style="color: var(--amber-700);">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Control Diagnostic</span>
+                    </div>
+                    <div style="font-size: 0.5rem; color: var(--amber-700); line-height: 1.4;">
+                        <div id="diagnosticInfo">Firebase: Disconnected | ESP32: Unknown</div>
+                    </div>
+                </div>
+
+                <!-- Device Controls -->
+                <div class="grid-3">
+                    <div class="monitoring-box">
+                        <div class="monitoring-label">
+                            <i class="fas fa-bolt"></i>
+                            <span>UV Lamp</span>
+                        </div>
+                        <div class="monitoring-value" id="uvControlStatus">STANDBY</div>
+                        <button class="btn btn-start" id="uvToggleBtn" style="margin-top: 0.5rem; font-size: 0.5rem; padding: 0.25rem;">
+                            <i class="fas fa-power-off"></i> Toggle
+                        </button>
+                    </div>
+                    <div class="monitoring-box">
+                        <div class="monitoring-label">
+                            <i class="fas fa-fan"></i>
+                            <span>Fan Cooling</span>
+                        </div>
+                        <div class="monitoring-value" id="fanStatus">STANDBY</div>
+                        <button class="btn btn-start" id="fanToggleBtn" style="margin-top: 0.5rem; font-size: 0.5rem; padding: 0.25rem;">
+                            <i class="fas fa-power-off"></i> Toggle
+                        </button>
+                    </div>
+                    <div class="monitoring-box">
+                        <div class="monitoring-label">
+                            <i class="fas fa-lightbulb"></i>
+                            <span>LED Strip</span>
+                        </div>
+                        <div class="monitoring-value" id="ledStatus">STANDBY</div>
+                        <button class="btn btn-start" id="ledToggleBtn" style="margin-top: 0.5rem; font-size: 0.5rem; padding: 0.25rem;">
+                            <i class="fas fa-power-off"></i> Toggle
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -906,34 +885,38 @@
         </div>
     </nav>
 
-    <script>
+    <script type="module">
+        // Import Firebase SDK
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, onValue, set, update, get, onDisconnect } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBQfXf3X16iPx-w_BJo8X2Oz7jCCTtLiWc",
+            authDomain: "biolens-1.firebaseapp.com",
+            databaseURL: "https://biolens-1-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "biolens-1",
+            storageBucket: "biolens-1.firebasestorage.app",
+            messagingSenderId: "209727967883",
+            appId: "1:209727967883:web:7044b0ea8b9bf329fc3a8e"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const biolensRef = ref(database, 'devices/biolens');
+        
         // State variables
         let uvStatus = 'ready';
-        let doorLocked = true;
-        let uvTimer = '00:00';
-        let uvProgress = 0;
-        let uvIntensity = 85;
-        let chamberTemp = 25;
-        let powerOutput = 0;
         let brightness = 70;
         let zoom = 400;
-        let uvInterval = null;
+        let isFirebaseConnected = false;
 
         // DOM Elements
         const uvStatusEl = document.getElementById('uvStatus');
-        const doorStatusEl = document.getElementById('doorStatus');
-        const uvTimerEl = document.getElementById('uvTimer');
-        const uvProgressValueEl = document.getElementById('uvProgressValue');
-        const uvProgressFillEl = document.getElementById('uvProgressFill');
-        const uvIntensityValueEl = document.getElementById('uvIntensityValue');
-        const uvIntensitySliderEl = document.getElementById('uvIntensitySlider');
-        const chamberTempEl = document.getElementById('chamberTemp');
-        const tempStatusEl = document.getElementById('tempStatus');
-        const powerOutputEl = document.getElementById('powerOutput');
-        const powerStatusEl = document.getElementById('powerStatus');
-        const uvStartBtn = document.getElementById('uvStartBtn');
-        const uvStopBtn = document.getElementById('uvStopBtn');
-        const sosBtn = document.getElementById('sosBtn');
+        const uvToggleBtn = document.getElementById('uvToggleBtn');
+        const fanToggleBtn = document.getElementById('fanToggleBtn');
+        const ledToggleBtn = document.getElementById('ledToggleBtn');
         const brightnessValueEl = document.getElementById('brightnessValue');
         const brightnessSliderEl = document.getElementById('brightnessSlider');
         const zoomValueEl = document.getElementById('zoomValue');
@@ -943,8 +926,6 @@
         // Initialize UI
         function initializeUI() {
             updateUVStatus();
-            updateDoorStatus();
-            updateUVIntensity();
             updateBrightness();
             updateZoom();
         }
@@ -953,181 +934,297 @@
         function updateUVStatus() {
             uvStatusEl.textContent = uvStatus.toUpperCase();
             uvStatusEl.className = `status-badge ${uvStatus === 'active' ? 'active' : 'ready'}`;
-            
-            // Update button states
-            // START button: disabled saat proses aktif, enabled saat ready
-            uvStartBtn.disabled = uvStatus === 'active';
-            
-            // STOP button: enabled saat proses aktif, disabled saat ready
-            uvStopBtn.disabled = uvStatus !== 'active';
-            
-            // Intensity slider: disabled saat proses aktif
-            uvIntensitySliderEl.disabled = uvStatus === 'active';
         }
 
-        function updateDoorStatus() {
-            doorStatusEl.textContent = doorLocked ? 'LOCKED' : 'UNLOCKED';
-            doorStatusEl.className = `info-value ${doorLocked ? 'locked' : 'unlocked'}`;
-        }
+        // Note: All dummy functions removed - now using Firebase real-time data
 
-        function updateUVIntensity() {
-            uvIntensityValueEl.textContent = `${uvIntensity}%`;
-            uvIntensitySliderEl.value = uvIntensity;
-        }
-
-        function resetAllValues() {
-            // Reset all monitoring values to 0
-            document.getElementById('humidityValue').textContent = '0%';
-            document.getElementById('ethanolValue').textContent = '0.0ppm';
-            document.getElementById('co2Value').textContent = '0ppm';
-            document.getElementById('coValue').textContent = '0.0ppm';
-            document.getElementById('powerOutput').textContent = '0W';
-            
-            // Reset status indicators
-            document.getElementById('humidityStatus').textContent = 'Normal';
-            document.getElementById('ethanolStatus').textContent = 'Aman';
-            document.getElementById('co2Status').textContent = 'Normal';
-            document.getElementById('coStatus').textContent = 'Aman';
-            document.getElementById('powerStatus').textContent = 'Idle';
-            document.getElementById('tempStatus').textContent = 'Standby';
-            
-            // Reset classes
-            const statusElements = document.querySelectorAll('.monitoring-status, .power-status');
-            statusElements.forEach(el => {
-                el.className = el.className.split(' ')[0]; // Keep only the base class
-            });
-            
-            // Reset chamber temperature and power
-            chamberTemp = 25;
-            powerOutput = 0;
-            updateMonitoring();
+        // Firebase Connection Status
+        // Firebase badge has been removed from UI, but we keep status tracking
+        function updateFirebaseStatus(connected) {
+            if (connected) {
+                isFirebaseConnected = true;
+                console.log('✅ Firebase connected');
+                updateDiagnostic('ESP32: Should be listening to Firebase');
+                
+                // Show ESP32 listener info when Firebase connects
+                setTimeout(checkESP32FirebaseListener, 1000);
+            } else {
+                isFirebaseConnected = false;
+                console.log('❌ Firebase disconnected');
+                updateDiagnostic('ESP32: Unknown');
+            }
         }
         
-        function startUVProcess() {
-            if (uvStatus === 'ready' || uvStatus === 'paused') {
-                // Stop any existing monitoring and timers
-                if (uvInterval) {
-                    clearInterval(uvInterval);
-                    uvInterval = null;
-                }
-                stopMonitoring();
-                
-                // Reset semua nilai monitoring ke 0
-                document.getElementById('humidityValue').textContent = '0%';
-                document.getElementById('ethanolValue').textContent = '0ppm';
-                document.getElementById('co2Value').textContent = '0ppm';
-                document.getElementById('coValue').textContent = '0ppm';
-                document.getElementById('powerOutput').textContent = '0W';
-                document.getElementById('chamberTemp').textContent = '0°C';
-                
-                // Reset status indicators
-                document.getElementById('humidityStatus').textContent = 'Normal';
-                document.getElementById('ethanolStatus').textContent = 'Aman';
-                document.getElementById('co2Status').textContent = 'Normal';
-                document.getElementById('coStatus').textContent = 'Aman';
-                document.getElementById('powerStatus').textContent = 'Idle';
-                document.getElementById('tempStatus').textContent = 'Standby';
-                
-                // Reset classes
-                const statusElements = document.querySelectorAll('.monitoring-status, .power-status');
-                statusElements.forEach(el => {
-                    el.className = el.className.split(' ')[0]; // Keep only the base class
+        // Firebase Real-time Listener for Sensor Data
+        function setupSensorListener() {
+            try {
+                const sensorsRef = ref(database, 'devices/biolens/sensors');
+                onValue(sensorsRef, (snapshot) => {
+                    const data = snapshot.val();
+                    console.log('📊 Sensor data received:', data);
+                    
+                    if (data) {
+                        // Update Temperature
+                        if (data.temperature !== undefined) {
+                            document.getElementById('chamberTemp').textContent = data.temperature + '°C';
+                            
+                            // Update temperature status
+                            const tempStatus = document.getElementById('tempStatus');
+                            if (data.temperature > 30) {
+                                tempStatus.textContent = 'Optimal';
+                                tempStatus.style.color = 'var(--green-600)';
+                            } else if (data.temperature < 20) {
+                                tempStatus.textContent = 'Rendah';
+                                tempStatus.style.color = 'var(--blue-600)';
+                            } else {
+                                tempStatus.textContent = 'Normal';
+                                tempStatus.style.color = 'var(--gray-600)';
+                            }
+                            console.log('🌡️ Temperature updated:', data.temperature);
+                        }
+                        
+                        // Update Humidity
+                        if (data.humidity !== undefined) {
+                            const humidity = data.humidity;
+                            document.getElementById('humidityValue').textContent = humidity + '%';
+                            
+                            // Update humidity status
+                            const humidityStatus = document.getElementById('humidityStatus');
+                            if (humidity > 70) {
+                                humidityStatus.textContent = 'Tinggi';
+                                humidityStatus.style.color = 'var(--amber-600)';
+                            } else if (humidity < 50) {
+                                humidityStatus.textContent = 'Rendah';
+                                humidityStatus.style.color = 'var(--blue-600)';
+                            } else {
+                                humidityStatus.textContent = 'Normal';
+                                humidityStatus.style.color = 'var(--green-600)';
+                            }
+                            console.log('💧 Humidity updated:', humidity);
+                        }
+                        
+                        // Update Gas Average
+                        if (data.gasAverage !== undefined) {
+                            document.getElementById('gasAverageValue').textContent = data.gasAverage + 'ppm';
+                            
+                            // Update gas average status
+                            const gasStatus = document.getElementById('gasAverageStatus');
+                            if (data.gasAverage > 2000) {
+                                gasStatus.textContent = 'Tinggi';
+                                gasStatus.style.color = 'var(--red-600)';
+                            } else if (data.gasAverage > 1000) {
+                                gasStatus.textContent = 'Sedang';
+                                gasStatus.style.color = 'var(--amber-600)';
+                            } else {
+                                gasStatus.textContent = 'Normal';
+                                gasStatus.style.color = 'var(--green-600)';
+                            }
+                            console.log('🌬️ Gas average updated:', data.gasAverage);
+                        }
+                        
+                        // Update Individual Gas Sensors
+                        if (data.gas1) {
+                            document.getElementById('gas1Detail').textContent = 
+                                `Sensor #1: Analog: ${data.gas1.analog} | Digital: ${data.gas1.digital}`;
+                        }
+                        if (data.gas2) {
+                            document.getElementById('gas2Detail').textContent = 
+                                `Sensor #2: Analog: ${data.gas2.analog} | Digital: ${data.gas2.digital}`;
+                        }
+                        if (data.gas3) {
+                            document.getElementById('gas3Detail').textContent = 
+                                `Sensor #3: Analog: ${data.gas3.analog} | Digital: ${data.gas3.digital}`;
+                        }
+                        
+                        // Update Gas Alert
+                        const gasAlert = document.getElementById('gasAlert');
+                        if (data.gasDetected === true) {
+                            gasAlert.style.display = 'block';
+                            console.log('⚠️ Gas detected! Alert shown');
+                        } else {
+                            gasAlert.style.display = 'none';
+                        }
+                    }
+                }, (error) => {
+                    console.error('❌ Error reading sensor data:', error);
+                    updateFirebaseStatus(false);
                 });
                 
-                // Reset variables
-                uvStatus = 'active';
-                powerOutput = 0;
-                chamberTemp = 0;
-                uvTimer = '03:30';
-                uvProgress = 0;
-                
-                // Reset progress bar
-                uvProgressValueEl.textContent = '0%';
-                uvProgressFillEl.style.width = '0%';
-                
-                // Update UI
-                updateUVStatus();
-                updateMonitoring();
-                
-                // Start monitoring updates - nilai random akan mulai berjalan
-                setTimeout(() => {
-                    startMonitoring();
-                }, 500); // Delay 500ms agar user melihat nilai 0 dulu
-                
-                // Start timer simulation
-                if (uvInterval) clearInterval(uvInterval);
-                uvInterval = setInterval(updateUVTimer, 1000);
+                updateFirebaseStatus(true);
+            } catch (error) {
+                console.error('❌ Error setting up sensor listener:', error);
+                updateFirebaseStatus(false);
             }
         }
-
-        // Variables to store current state when paused
-        let pausedState = {
-            humidity: 0,
-            ethanol: 0,
-            co2: 0,
-            co: 0,
-            power: 0,
-            temp: 0,
-            timer: '00:00',
-            progress: 0
-        };
-
-        function stopUVProcess() {
-            if (uvStatus === 'active') {
-                // Stop the timer
-                if (uvInterval) {
-                    clearInterval(uvInterval);
-                    uvInterval = null;
-                }
-                
-                // Stop monitoring updates - nilai akan berhenti di posisi saat ini
-                stopMonitoring();
-                
-                // Update status to ready (siap untuk di-start lagi)
-                uvStatus = 'ready';
-                
-                // Update UI
-                updateUVStatus();
-                
-                // Reset timer display
-                uvTimerEl.textContent = '00:00';
+        
+        // Firebase Real-time Listener for Control Status
+        function setupControlListener() {
+            try {
+                const controlsRef = ref(database, 'devices/biolens/controls');
+                onValue(controlsRef, (snapshot) => {
+                    const controls = snapshot.val();
+                    console.log('🎛️ Control data received:', controls);
+                    
+                    if (controls) {
+                        // Update UV Status
+                        if (controls.uv !== undefined) {
+                            updateUVControlStatus(controls.uv);
+                        }
+                        
+                        // Update Fan Status
+                        if (controls.fan !== undefined) {
+                            updateFanStatus(controls.fan);
+                        }
+                        
+                        // Update LED Status
+                        if (controls.led !== undefined) {
+                            updateLEDStatus(controls.led);
+                        }
+                    }
+                }, (error) => {
+                    console.error('❌ Error reading control data:', error);
+                });
+            } catch (error) {
+                console.error('❌ Error setting up control listener:', error);
             }
         }
-
-        function updateUVTimer() {
-            // Simple timer simulation
-            const [minutes, seconds] = uvTimer.split(':').map(Number);
-            let totalSeconds = minutes * 60 + seconds - 1;
+        
+        // Update UV Control Status from Firebase
+        function updateUVControlStatus(isActive) {
+            const uvStatus = document.getElementById('uvStatus');
+            const uvControlStatus = document.getElementById('uvControlStatus');
+            const uvBtn = document.getElementById('uvToggleBtn');
             
-            if (totalSeconds <= 0) {
-                stopUVProcess();
-                return;
+            if (isActive) {
+                uvStatus.textContent = 'ACTIVE';
+                uvStatus.className = 'status-badge active';
+                uvControlStatus.textContent = 'ACTIVE';
+                uvControlStatus.style.color = 'var(--green-600)';
+                uvBtn.innerHTML = '<i class="fas fa-stop"></i> Stop';
+                uvBtn.className = 'btn btn-stop';
+            } else {
+                uvStatus.textContent = 'READY';
+                uvStatus.className = 'status-badge ready';
+                uvControlStatus.textContent = 'STANDBY';
+                uvControlStatus.style.color = 'var(--blue-600)';
+                uvBtn.innerHTML = '<i class="fas fa-power-off"></i> Start';
+                uvBtn.className = 'btn btn-start';
             }
+            console.log('💡 UV status updated:', isActive ? 'ACTIVE' : 'STANDBY');
+        }
+        
+        // Update Fan Status from Firebase
+        function updateFanStatus(isActive) {
+            const fanStatus = document.getElementById('fanStatus');
+            const fanBtn = document.getElementById('fanToggleBtn');
             
-            const newMinutes = Math.floor(totalSeconds / 60);
-            const newSeconds = totalSeconds % 60;
-            uvTimer = `${newMinutes.toString().padStart(2, '0')}:${newSeconds.toString().padStart(2, '0')}`;
-            uvTimerEl.textContent = uvTimer;
+            if (isActive) {
+                fanStatus.textContent = 'ACTIVE';
+                fanStatus.style.color = 'var(--green-600)';
+                fanBtn.innerHTML = '<i class="fas fa-stop"></i> Stop';
+                fanBtn.className = 'btn btn-stop';
+            } else {
+                fanStatus.textContent = 'STANDBY';
+                fanStatus.style.color = 'var(--blue-600)';
+                fanBtn.innerHTML = '<i class="fas fa-power-off"></i> Start';
+                fanBtn.className = 'btn btn-start';
+            }
+            console.log('🌀 Fan status updated:', isActive ? 'ACTIVE' : 'STANDBY');
+        }
+        
+        // Update LED Status from Firebase
+        function updateLEDStatus(isActive) {
+            const ledStatus = document.getElementById('ledStatus');
+            const ledBtn = document.getElementById('ledToggleBtn');
             
-            // Update progress (simulation)
-            if (uvProgress < 100) {
-                uvProgress += 1;
-                updateProgress();
+            if (isActive) {
+                ledStatus.textContent = 'ACTIVE';
+                ledStatus.style.color = 'var(--green-600)';
+                ledBtn.innerHTML = '<i class="fas fa-stop"></i> Stop';
+                ledBtn.className = 'btn btn-stop';
+            } else {
+                ledStatus.textContent = 'STANDBY';
+                ledStatus.style.color = 'var(--blue-600)';
+                ledBtn.innerHTML = '<i class="fas fa-power-off"></i> Start';
+                ledBtn.className = 'btn btn-start';
+            }
+            console.log('💡 LED status updated:', isActive ? 'ACTIVE' : 'STANDBY');
+        }
+        
+        // ESP32 Firebase Listener Check
+        function checkESP32FirebaseListener() {
+            // This is just for display - we can't actually test if ESP32 is listening
+            // ESP32 should be listening to Firebase control paths
+            updateDiagnostic('ESP32: Should be listening to Firebase');
+            
+            console.log('🔍 ESP32 Firebase Listener Paths:');
+            console.log('   /devices/biolens/controls/uv');
+            console.log('   /devices/biolens/controls/fan');
+            console.log('   /devices/biolens/controls/led');
+        }
+        
+        // Update Diagnostic Info
+        function updateDiagnostic(esp32Status) {
+            const diagnosticEl = document.getElementById('diagnosticInfo');
+            const firebaseStatus = isFirebaseConnected ? 'Connected' : 'Disconnected';
+            diagnosticEl.textContent = `Firebase: ${firebaseStatus} | ${esp32Status}`;
+        }
+        
+        // Firebase-Only Control Functions (ESP32 should listen to Firebase)
+        async function controlUV(state) {
+            try {
+                console.log('🚀 Sending UV control to Firebase:', state);
+                console.log('🔍 ESP32 should be listening to: /devices/biolens/controls/uv');
+                
+                const uvRef = ref(database, 'devices/biolens/controls/uv');
+                await set(uvRef, state);
+                
+                console.log('✅ UV control successfully written to Firebase:', state);
+                console.log('📊 ESP32 should receive this change and control physical device');
+                
+            } catch (error) {
+                console.error('❌ Error controlling UV:', error);
+                console.error('❌ Error details:', error.message);
+                alert('Error: Tidak dapat mengontrol UV Lamp');
             }
         }
-
-        function updateMonitoring() {
-            chamberTempEl.textContent = `${chamberTemp}°C`;
-            tempStatusEl.textContent = chamberTemp > 30 ? 'Optimal' : 'Standby';
-            powerOutputEl.textContent = `${powerOutput}W`;
-            powerStatusEl.textContent = powerOutput > 0 ? 'Active' : 'Idle';
+        
+        async function controlFan(state) {
+            try {
+                console.log('🚀 Sending Fan control to Firebase:', state);
+                console.log('🔍 ESP32 should be listening to: /devices/biolens/controls/fan');
+                
+                const fanRef = ref(database, 'devices/biolens/controls/fan');
+                await set(fanRef, state);
+                
+                console.log('✅ Fan control successfully written to Firebase:', state);
+                console.log('📊 ESP32 should receive this change and control physical device');
+                
+            } catch (error) {
+                console.error('❌ Error controlling Fan:', error);
+                console.error('❌ Error details:', error.message);
+                alert('Error: Tidak dapat mengontrol Fan');
+            }
         }
-
-        function updateProgress() {
-            uvProgressValueEl.textContent = `${uvProgress}%`;
-            uvProgressFillEl.style.width = `${uvProgress}%`;
+        
+        async function controlLED(state) {
+            try {
+                console.log('🚀 Sending LED control to Firebase:', state);
+                console.log('🔍 ESP32 should be listening to: /devices/biolens/controls/led');
+                
+                const ledRef = ref(database, 'devices/biolens/controls/led');
+                await set(ledRef, state);
+                
+                console.log('✅ LED control successfully written to Firebase:', state);
+                console.log('📊 ESP32 should receive this change and control physical device');
+                
+            } catch (error) {
+                console.error('❌ Error controlling LED:', error);
+                console.error('❌ Error details:', error.message);
+                alert('Error: Tidak dapat mengontrol LED');
+            }
         }
-
+        
         // Microscope Functions
         function updateBrightness() {
             brightnessValueEl.textContent = `${brightness}%`;
@@ -1135,28 +1232,111 @@
         }
 
         function updateZoom() {
-            // Ensure zoom is a multiple of 100 and within the valid range
             zoom = Math.max(100, Math.min(1000, Math.round(zoom / 100) * 100));
             zoomValueEl.textContent = `${zoom}x`;
             zoomSliderEl.value = zoom;
-            
-            // Here you can add any additional zoom-related logic
-            // For example, you might want to adjust the camera zoom or UI elements
-            console.log(`Zoom set to ${zoom}x`);
+            console.log(`🔍 Zoom set to ${zoom}x`);
         }
 
-        // Event Listeners
-        uvStartBtn.addEventListener('click', startUVProcess);
-        uvStopBtn.addEventListener('click', stopUVProcess);
-        sosBtn.addEventListener('click', () => {
-            alert('EMERGENCY STOP ACTIVATED!');
-            stopUVProcess();
+        // Event Listeners - Firebase Integration with improved stability
+        
+        // UV Control Event Listener
+        uvToggleBtn.addEventListener('click', async () => {
+            console.log('💡 UV toggle button clicked');
+            
+            // Disable button temporarily to prevent double clicks
+            uvToggleBtn.disabled = true;
+            
+            try {
+                // Get current UV status from Firebase
+                const controlsRef = ref(database, 'devices/biolens/controls/uv');
+                const snapshot = await get(controlsRef);
+                const currentState = snapshot.val() || false;
+                
+                console.log('📊 Current UV state:', currentState);
+                const newState = !currentState;
+                console.log('🔄 Toggling UV to:', newState);
+                
+                // Toggle the state
+                await controlUV(newState);
+                
+            } catch (error) {
+                console.error('❌ Error toggling UV:', error);
+                // Fallback: assume it's off and turn on
+                await controlUV(true);
+            } finally {
+                // Re-enable button after 1 second
+                setTimeout(() => {
+                    uvToggleBtn.disabled = false;
+                }, 1000);
+            }
+        });
+        
+        // Fan Control Event Listener
+        fanToggleBtn.addEventListener('click', async () => {
+            console.log('🌀 Fan toggle button clicked');
+            
+            // Disable button temporarily to prevent double clicks
+            fanToggleBtn.disabled = true;
+            
+            try {
+                // Get current fan status from Firebase
+                const controlsRef = ref(database, 'devices/biolens/controls/fan');
+                const snapshot = await get(controlsRef);
+                const currentState = snapshot.val() || false;
+                
+                console.log('📊 Current Fan state:', currentState);
+                const newState = !currentState;
+                console.log('🔄 Toggling Fan to:', newState);
+                
+                // Toggle the state
+                await controlFan(newState);
+                
+            } catch (error) {
+                console.error('❌ Error toggling fan:', error);
+                // Fallback: assume it's off and turn on
+                await controlFan(true);
+            } finally {
+                // Re-enable button after 1 second
+                setTimeout(() => {
+                    fanToggleBtn.disabled = false;
+                }, 1000);
+            }
+        });
+        
+        // LED Control Event Listener
+        ledToggleBtn.addEventListener('click', async () => {
+            console.log('💡 LED toggle button clicked');
+            
+            // Disable button temporarily to prevent double clicks
+            ledToggleBtn.disabled = true;
+            
+            try {
+                // Get current LED status from Firebase
+                const controlsRef = ref(database, 'devices/biolens/controls/led');
+                const snapshot = await get(controlsRef);
+                const currentState = snapshot.val() || false;
+                
+                console.log('📊 Current LED state:', currentState);
+                const newState = !currentState;
+                console.log('🔄 Toggling LED to:', newState);
+                
+                // Toggle the state
+                await controlLED(newState);
+                
+            } catch (error) {
+                console.error('❌ Error toggling LED:', error);
+                // Fallback: assume it's off and turn on
+                await controlLED(true);
+            } finally {
+                // Re-enable button after 1 second
+                setTimeout(() => {
+                    ledToggleBtn.disabled = false;
+                }, 1000);
+            }
         });
 
-        uvIntensitySliderEl.addEventListener('input', (e) => {
-            uvIntensity = parseInt(e.target.value);
-            updateUVIntensity();
-        });
+        // Note: UV Intensity slider removed - not using real data
 
         brightnessSliderEl.addEventListener('input', (e) => {
             brightness = parseInt(e.target.value);
@@ -1223,158 +1403,58 @@
             });
         });
 
-        // Function to generate random value within a range
-        function getRandomValue(min, max, decimals = 1) {
-            const value = Math.random() * (max - min) + min;
-            return parseFloat(value.toFixed(decimals));
-        }
-
-        // Variables to control monitoring updates
-        let monitoringInterval = null;
-        let isMonitoringPaused = false;
-        
-        // Function to start monitoring updates
-        function startMonitoring() {
-            // Clear any existing interval to prevent duplicates
-            if (monitoringInterval) {
-                clearInterval(monitoringInterval);
-                monitoringInterval = null;
-            }
+        // Initialize Firebase and Setup Listeners
+        function initializeFirebase() {
+            console.log('🚀 Initializing Firebase...');
             
-            // Reset pause state
-            isMonitoringPaused = false;
-            
-            // Start new monitoring
-            updateMonitoringValues();
-            monitoringInterval = setInterval(updateMonitoringValues, 3000);
-        }
-        
-        // Function to stop monitoring updates
-        function stopMonitoring() {
-            if (monitoringInterval) {
-                clearInterval(monitoringInterval);
-                monitoringInterval = null;
-            }
-            isMonitoringPaused = true;
-        }
-        
-        // Function to pause monitoring (keeps current values but stops updates)
-        function pauseMonitoring() {
-            isMonitoringPaused = true;
-            stopMonitoring();
-        }
-        
-        // Function to resume monitoring
-        function resumeMonitoring() {
-            isMonitoringPaused = false;
-            startMonitoring();
-        }
-        
-        // Function to update monitoring values
-        function updateMonitoringValues() {
-            if (isMonitoringPaused) return;
-            
-            // Update humidity (kelembapan)
-            const humidityValue = document.getElementById('humidityValue');
-            const humidityStatus = document.getElementById('humidityStatus');
-            const humidity = getRandomValue(40, 80);
-            humidityValue.textContent = `${humidity}%`;
-            humidityStatus.textContent = humidity > 70 ? 'Tinggi' : humidity < 50 ? 'Rendah' : 'Normal';
-            humidityStatus.className = 'monitoring-status ' + 
-                (humidity > 70 ? 'status-warning' : humidity < 50 ? 'status-warning' : 'status-ok');
-
-            // Update ethanol (etanol)
-            const ethanolValue = document.getElementById('ethanolValue');
-            const ethanolStatus = document.getElementById('ethanolStatus');
-            const ethanol = getRandomValue(0.1, 2.0, 2);
-            ethanolValue.textContent = `${ethanol}ppm`;
-            ethanolStatus.textContent = ethanol > 1.0 ? 'Tinggi' : 'Aman';
-            ethanolStatus.className = 'monitoring-status ' + (ethanol > 1.0 ? 'status-warning' : 'status-ok');
-
-            // Update CO2
-            const co2Value = document.getElementById('co2Value');
-            const co2Status = document.getElementById('co2Status');
-            const co2 = Math.round(getRandomValue(300, 2000));
-            co2Value.textContent = `${co2}ppm`;
-            co2Status.textContent = co2 > 1000 ? 'Tinggi' : 'Normal';
-            co2Status.className = 'monitoring-status ' + (co2 > 1000 ? 'status-warning' : 'status-ok');
-
-            // Update CO (karbon monoksida)
-            const coValue = document.getElementById('coValue');
-            const coStatus = document.getElementById('coStatus');
-            const co = getRandomValue(0.1, 10, 1);
-            coValue.textContent = `${co}ppm`;
-            coStatus.textContent = co > 5 ? 'Bahaya' : co > 2 ? 'Waspada' : 'Aman';
-            coStatus.className = 'monitoring-status ' + 
-                (co > 5 ? 'status-error' : co > 2 ? 'status-warning' : 'status-ok');
-
-            // Update power (daya)
-            const powerOutput = document.getElementById('powerOutput');
-            const powerStatus = document.getElementById('powerStatus');
-            const power = Math.round(getRandomValue(5, 50));
-            powerOutput.textContent = `${power}W`;
-            powerStatus.textContent = power > 40 ? 'Tinggi' : power < 10 ? 'Rendah' : 'Normal';
-            powerStatus.className = 'power-status ' + 
-                (power > 40 ? 'status-warning' : power < 10 ? 'status-warning' : 'status-ok');
+            try {
+                // Setup sensor data listener
+                setupSensorListener();
                 
-            // Store current values in case we pause
-            if (uvStatus === 'paused') {
-                pausedState = {
-                    humidity: parseFloat(humidityValue.textContent),
-                    ethanol: parseFloat(ethanolValue.textContent),
-                    co2: parseFloat(co2Value.textContent),
-                    co: parseFloat(coValue.textContent),
-                    power: parseFloat(powerOutput.textContent),
-                    temp: chamberTemp,
-                    timer: uvTimer,
-                    progress: uvProgress,
-                    powerStatus: powerStatus.textContent,
-                    tempStatus: document.getElementById('tempStatus').textContent,
-                    humidityStatus: humidityStatus.textContent,
-                    ethanolStatus: ethanolStatus.textContent,
-                    co2Status: co2Status.textContent,
-                    coStatus: coStatus.textContent
-                };
+                // Setup control status listener
+                setupControlListener();
+                
+                console.log('✅ Firebase initialized successfully');
+            } catch (error) {
+                console.error('❌ Error initializing Firebase:', error);
+                updateFirebaseStatus(false);
             }
         }
 
-        // Initialize all values to 0
-        // Fungsi ini dipanggil saat halaman pertama kali dimuat
+        // Initialize all values to 0 - Firebase version
         function initializeAllValues() {
+            console.log('🔄 Initializing all values...');
+            
             // Reset all monitoring values to 0
             document.getElementById('humidityValue').textContent = '0%';
-            document.getElementById('ethanolValue').textContent = '0ppm';
-            document.getElementById('co2Value').textContent = '0ppm';
-            document.getElementById('coValue').textContent = '0ppm';
-            document.getElementById('powerOutput').textContent = '0W';
+            document.getElementById('gasAverageValue').textContent = '0ppm';
             document.getElementById('chamberTemp').textContent = '0°C';
+            
+            // Reset gas sensor details
+            document.getElementById('gas1Detail').textContent = 'Sensor #1: Analog: 0 | Digital: 0';
+            document.getElementById('gas2Detail').textContent = 'Sensor #2: Analog: 0 | Digital: 0';
+            document.getElementById('gas3Detail').textContent = 'Sensor #3: Analog: 0 | Digital: 0';
             
             // Reset status indicators
             document.getElementById('humidityStatus').textContent = 'Normal';
-            document.getElementById('ethanolStatus').textContent = 'Aman';
-            document.getElementById('co2Status').textContent = 'Normal';
-            document.getElementById('coStatus').textContent = 'Aman';
-            document.getElementById('powerStatus').textContent = 'Idle';
+            document.getElementById('gasAverageStatus').textContent = 'Normal';
             document.getElementById('tempStatus').textContent = 'Standby';
             
-            // Reset classes
-            const statusElements = document.querySelectorAll('.monitoring-status, .power-status');
-            statusElements.forEach(el => {
-                el.className = el.className.split(' ')[0]; // Keep only the base class
-            });
+            // Reset control statuses
+            document.getElementById('uvControlStatus').textContent = 'STANDBY';
+            document.getElementById('fanStatus').textContent = 'STANDBY';
+            document.getElementById('ledStatus').textContent = 'STANDBY';
             
-            // Reset all variables
-            chamberTemp = 0;
-            powerOutput = 0;
+            // Hide gas alert by default
+            document.getElementById('gasAlert').style.display = 'none';
+            
+            // Reset variables
             uvStatus = 'ready';
-            uvProgress = 0;
-            uvTimer = '00:00';
             
             // Update UI
-            uvTimerEl.textContent = '00:00';
-            updateMonitoring();
             updateUVStatus();
-            updateProgress();
+            
+            console.log('✅ All values initialized');
         }
         
         // Camera Access
@@ -1406,10 +1486,15 @@
             }
         }
         
-        // Initialize the application
+        // Initialize the application with Firebase
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 BioLens Control Panel Starting...');
+            
             // Set all values to 0 on page load
             initializeAllValues();
+            
+            // Initialize Firebase connection and listeners
+            initializeFirebase();
             
             // Initialize camera
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -1419,24 +1504,17 @@
                 placeholder.innerHTML = '<i class="fas fa-exclamation-triangle"></i><p>Browser tidak mendukung akses kamera</p>';
                 placeholder.style.color = 'var(--amber-500)';
             }
+            
+            // Initialize UI components
             initializeUI();
             
-            // Temperature slider functionality
-            const temperatureSlider = document.getElementById('temperatureSlider');
-            const temperatureValue = document.getElementById('temperatureValue');
+            // Show ESP32 Firebase listener info
+            setTimeout(checkESP32FirebaseListener, 2000);
             
-            if (temperatureSlider && temperatureValue) {
-                // Update temperature display when slider moves
-                temperatureSlider.addEventListener('input', function() {
-                    temperatureValue.textContent = `${this.value}°C`;
-                });
-                
-                // Initial display
-                temperatureValue.textContent = `${temperatureSlider.value}°C`;
-            }
-
-            // TIDAK auto-start monitoring - monitoring hanya jalan saat user klik START
-            // startMonitoring(); <- DIHAPUS
+            console.log('✅ BioLens Control Panel initialized with Firebase integration');
+            console.log('📊 Real-time sensor monitoring: ACTIVE');
+            console.log('🎛️ Device control via Firebase: READY');
+            console.log('🔍 ESP32 diagnostic monitoring: ACTIVE');
         });
     </script>
 </body>

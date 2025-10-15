@@ -2,6 +2,7 @@
 const firebaseConfig = {
   apiKey: "AIzaSyBQfXf3X16iPx-w_BJo8X2Oz7jCCTtLiWc",
   authDomain: "biolens-1.firebaseapp.com",
+  databaseURL: "https://biolens-1-default-rtdb.asia-southeast1.firebasedatabase.app", // Realtime Database URL (Asia Southeast region)
   projectId: "biolens-1",
   storageBucket: "biolens-1.firebasestorage.app",
   messagingSenderId: "209727967883",

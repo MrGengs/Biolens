@@ -1147,6 +1147,16 @@
                     .collection('users')
                     .doc(user.uid)
                     .get();
+                
+                // Fetch total scan dari collection 'analysis'
+                // Hitung berapa banyak analisis yang sudah dilakukan oleh user ini
+                const analysisSnapshot = await firebase.firestore()
+                    .collection('analysis')
+                    .where('userId', '==', user.uid)
+                    .get();
+                
+                const totalAnalysis = analysisSnapshot.size;
+                console.log('📊 Total analisis dari Firestore:', totalAnalysis);
 
                 if (userDoc.exists) {
                     const userData = userDoc.data();
@@ -1194,26 +1204,80 @@
                     }
 
                     // Update stats dari Firestore
-                    // Total Scan - menampilkan jumlah total scan yang dilakukan user
+                    // Total Scan - menggunakan data REAL dari collection 'analysis'
                     const totalScanElement = document.getElementById('totalScanValue');
                     if (totalScanElement) {
-                        const totalScan = userData.totalScan || 0;
-                        totalScanElement.textContent = totalScan;
+                        totalScanElement.textContent = totalAnalysis;
+                        console.log('✅ Total Scan updated:', totalAnalysis);
                     }
 
-                    // Akurasi - menampilkan akurasi rata-rata dari semua scan
+                    // Akurasi - hitung dari rata-rata reduction semua analisis
                     const accuracyElement = document.getElementById('accuracyValue');
                     if (accuracyElement) {
-                        const accuracy = userData.accuracy || 0;
+                        let totalReduction = 0;
+                        let countWithReduction = 0;
+                        
+                        // Hitung rata-rata reduction dari semua analisis yang punya treatment
+                        analysisSnapshot.forEach(doc => {
+                            const data = doc.data();
+                            const reduction = data.results?.treatment?.reduction;
+                            
+                            if (reduction !== undefined && reduction !== null) {
+                                totalReduction += reduction;
+                                countWithReduction++;
+                            }
+                        });
+                        
+                        // Hitung rata-rata reduction sebagai akurasi (dengan 1 desimal)
+                        const accuracy = countWithReduction > 0 ? (totalReduction / countWithReduction).toFixed(1) : '0.0';
                         accuracyElement.textContent = `${accuracy}%`;
+                        console.log('✅ Akurasi (avg reduction) updated:', accuracy + '%', '(dari ' + countWithReduction + ' analisis dengan treatment)');
                     }
 
-                    console.log('User profile loaded successfully from Firestore');
+                    console.log('✅ User profile loaded successfully from Firestore');
                 } else {
-                    console.log('User document not found in Firestore');
+                    console.log('ℹ️ User document not found in Firestore, using defaults');
+                    
+                    // Tetap update Total Scan meskipun user doc tidak ada
+                    const totalScanElement = document.getElementById('totalScanValue');
+                    if (totalScanElement) {
+                        totalScanElement.textContent = totalAnalysis;
+                    }
+                    
+                    // Update akurasi dari rata-rata reduction
+                    const accuracyElement = document.getElementById('accuracyValue');
+                    if (accuracyElement) {
+                        let totalReduction = 0;
+                        let countWithReduction = 0;
+                        
+                        analysisSnapshot.forEach(doc => {
+                            const data = doc.data();
+                            const reduction = data.results?.treatment?.reduction;
+                            
+                            if (reduction !== undefined && reduction !== null) {
+                                totalReduction += reduction;
+                                countWithReduction++;
+                            }
+                        });
+                        
+                        const accuracy = countWithReduction > 0 ? (totalReduction / countWithReduction).toFixed(1) : '0.0';
+                        accuracyElement.textContent = `${accuracy}%`;
+                        console.log('✅ Akurasi (avg reduction) updated:', accuracy + '%');
+                    }
                 }
             } catch (error) {
-                console.error('Error loading user profile:', error);
+                console.error('❌ Error loading user profile:', error);
+                
+                // Set default values jika terjadi error
+                const totalScanElement = document.getElementById('totalScanValue');
+                if (totalScanElement) {
+                    totalScanElement.textContent = '0';
+                }
+                
+                const accuracyElement = document.getElementById('accuracyValue');
+                if (accuracyElement) {
+                    accuracyElement.textContent = '0%';
+                }
             }
         }
 

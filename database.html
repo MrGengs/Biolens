@@ -942,7 +942,7 @@
         </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Modal Specimen -->
     <div id="specimenModal" class="modal-overlay" style="display: none;">
         <div class="modal">
             <div class="modal-header">
@@ -981,6 +981,72 @@
             </div>
 
             <button class="btn btn-primary" id="modalCloseBtn">Tutup</button>
+        </div>
+    </div>
+
+    <!-- Modal Detail Analisis -->
+    <div id="detailModal" class="modal-overlay" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title" id="detailModalTitle">Detail Analisis</div>
+                    <div class="modal-subtitle" id="detailModalSubtitle">Sate Ayam</div>
+                </div>
+                <button class="modal-close" id="detailModalClose">×</button>
+            </div>
+
+            <div class="modal-details">
+                <!-- Info Dasar -->
+                <div class="detail-row" style="margin-bottom: 0.5rem;">
+                    <span class="detail-label">Status:</span>
+                    <span class="badge bahaya" id="detailStatus">BAHAYA</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Bakteri:</span>
+                    <span class="detail-value" id="detailBacteria">E.coli</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Tanggal:</span>
+                    <span class="detail-value" id="detailDate">Kamis, 16 Okt 2025</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Waktu:</span>
+                    <span class="detail-value" id="detailTime">00:43:05</span>
+                </div>
+                
+                <!-- Penjelasan -->
+                <div class="growth-info" style="margin-top: 0.5rem;">
+                    <div class="growth-label">Keterangan AI:</div>
+                    <div class="growth-text" id="detailReason">Analisis AI menunjukkan...</div>
+                </div>
+                
+                <!-- Treatment Recommendation (jika ada) -->
+                <div id="detailTreatmentSection" style="margin-top: 0.75rem; display: none;">
+                    <div style="font-weight: 700; color: var(--blue-700); margin-bottom: 0.5rem; font-size: 0.625rem;">
+                        <i class="fas fa-bolt"></i> Rekomendasi Treatment
+                    </div>
+                    <div class="pathogen-grid">
+                        <div class="pathogen-stat blue">
+                            <div class="stat-label" style="color: var(--blue-700);">Dosis UV</div>
+                            <div class="stat-value blue" id="detailUVDose">45 mJ/cm²</div>
+                        </div>
+                        <div class="pathogen-stat blue">
+                            <div class="stat-label" style="color: var(--blue-700);">Durasi</div>
+                            <div class="stat-value blue" id="detailDuration">2.5 menit</div>
+                        </div>
+                        <div class="pathogen-stat blue">
+                            <div class="stat-label" style="color: var(--blue-700);">Reduksi</div>
+                            <div class="stat-value blue" id="detailReduction">99.7%</div>
+                        </div>
+                        <div class="pathogen-stat blue">
+                            <div class="stat-label" style="color: var(--blue-700);">Fan Cooling</div>
+                            <div class="stat-value blue" id="detailFanCooling">YA</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" id="detailModalCloseBtn">Tutup</button>
         </div>
     </div>
 
@@ -1153,15 +1219,16 @@
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
                     
-                    // Tentukan status berdasarkan totalCFU atau status dari hasil
+                    // Tentukan status berdasarkan results.status (format baru)
                     let status = 'aman';
-                    const totalCFU = data.results?.totalCFU || 0;
                     const resultStatus = data.results?.status?.toLowerCase() || '';
                     
-                    if (resultStatus === 'bahaya' || totalCFU > 100) {
+                    if (resultStatus === 'bahaya') {
                         status = 'bahaya';
-                    } else if (resultStatus === 'warning' || totalCFU > 30) {
+                    } else if (resultStatus === 'warning') {
                         status = 'warning';
+                    } else if (resultStatus === 'aman') {
+                        status = 'aman';
                     }
                     
                     historyData.push({
@@ -1170,7 +1237,7 @@
                         date: data.date || '-',
                         time: data.time || '-',
                         status: status,
-                        cfu: totalCFU,
+                        cfu: 0, // CFU tidak lagi digunakan di format baru
                         imageUrl: data.imageUrl || null,
                         timestamp: data.createdAt || null,
                         fullData: data
@@ -1325,7 +1392,10 @@
                                 <span>${history.time}</span>
                             </div>
                             <div class="history-footer">
-                                <div class="history-cfu">CFU: <span>${history.cfu}</span></div>
+                                <div class="history-cfu">Bakteri: <span>${history.fullData?.results?.bacteriaName || 'N/A'}</span></div>
+                                <button class="history-detail-btn" data-id="${history.id}">
+                                    <i class="fas fa-info-circle"></i> Detail
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1402,12 +1472,35 @@
                 }
             });
             
-            // Modal close
+            // Modal close - Specimen modal
             modalClose.addEventListener('click', closeModal);
             modalCloseBtn.addEventListener('click', closeModal);
             specimenModal.addEventListener('click', function(e) {
                 if (e.target === specimenModal) {
                     closeModal();
+                }
+            });
+            
+            // Modal close - Detail analysis modal
+            const detailModalClose = document.getElementById('detailModalClose');
+            const detailModalCloseBtn = document.getElementById('detailModalCloseBtn');
+            const detailModal = document.getElementById('detailModal');
+            
+            detailModalClose.addEventListener('click', closeDetailModal);
+            detailModalCloseBtn.addEventListener('click', closeDetailModal);
+            detailModal.addEventListener('click', function(e) {
+                if (e.target === detailModal) {
+                    closeDetailModal();
+                }
+            });
+            
+            // Detail button click - menggunakan event delegation
+            document.addEventListener('click', function(e) {
+                const detailBtn = e.target.closest('.history-detail-btn');
+                if (detailBtn) {
+                    const historyId = detailBtn.dataset.id;
+                    console.log('🔍 Detail button clicked for ID:', historyId);
+                    showDetailModal(historyId);
                 }
             });
             
@@ -1440,6 +1533,107 @@
         // Close modal
         function closeModal() {
             specimenModal.style.display = 'none';
+        }
+        
+        // ================================================================
+        // FUNGSI DETAIL ANALISIS
+        // ================================================================
+        // Fungsi untuk menampilkan detail analisis dari history
+        // Data diambil dari Firestore berdasarkan document ID
+        // ================================================================
+        
+        // Show detail analysis modal
+        async function showDetailModal(historyId) {
+            console.log('📋 Membuka detail untuk ID:', historyId);
+            
+            // Cari data dari historyData yang sudah di-load
+            const historyItem = historyData.find(h => h.id === historyId);
+            
+            if (!historyItem) {
+                alert('Data tidak ditemukan!');
+                console.error('❌ History item tidak ditemukan:', historyId);
+                return;
+            }
+            
+            const data = historyItem.fullData;
+            console.log('📊 Data analisis:', data);
+            
+            // Populate modal dengan data
+            const detailModal = document.getElementById('detailModal');
+            const detailModalTitle = document.getElementById('detailModalTitle');
+            const detailModalSubtitle = document.getElementById('detailModalSubtitle');
+            const detailStatus = document.getElementById('detailStatus');
+            const detailBacteria = document.getElementById('detailBacteria');
+            const detailDate = document.getElementById('detailDate');
+            const detailTime = document.getElementById('detailTime');
+            const detailReason = document.getElementById('detailReason');
+            
+            // Set basic info
+            detailModalTitle.textContent = 'Detail Analisis';
+            detailModalSubtitle.textContent = data.foodName || 'Tidak ada nama';
+            
+            // Set status dengan styling
+            const status = data.results?.status || 'N/A';
+            detailStatus.textContent = status.toUpperCase();
+            detailStatus.className = 'badge';
+            
+            if (status.toUpperCase() === 'BAHAYA') {
+                detailStatus.classList.add('bahaya');
+            } else if (status.toUpperCase() === 'AMAN') {
+                detailStatus.classList.add('aman');
+            } else {
+                detailStatus.classList.add('warning');
+            }
+            
+            // Set bacteria name
+            detailBacteria.textContent = data.results?.bacteriaName || 'Tidak teridentifikasi';
+            
+            // Set date and time
+            detailDate.textContent = data.date || '-';
+            
+            // Format waktu: hanya jam dan menit (tanpa detik)
+            const fullTime = data.time || '-';
+            if (fullTime !== '-') {
+                // Format: "00.43.05" → "00:43"
+                const timeParts = fullTime.split('.');
+                const formattedTime = timeParts.length >= 2 ? `${timeParts[0]}:${timeParts[1]}` : fullTime;
+                detailTime.textContent = formattedTime;
+            } else {
+                detailTime.textContent = '-';
+            }
+            
+            // Set reason/explanation
+            detailReason.textContent = data.results?.reason || 'Tidak ada keterangan';
+            
+            // Handle treatment recommendation
+            const detailTreatmentSection = document.getElementById('detailTreatmentSection');
+            if (data.results?.treatment) {
+                const treatment = data.results.treatment;
+                
+                // Show treatment section
+                detailTreatmentSection.style.display = 'block';
+                
+                // Update treatment values
+                document.getElementById('detailUVDose').textContent = treatment.uvDose + ' mJ/cm²';
+                document.getElementById('detailDuration').textContent = treatment.duration + ' menit';
+                document.getElementById('detailReduction').textContent = treatment.reduction + '%';
+                document.getElementById('detailFanCooling').textContent = treatment.fanCooling || 'N/A';
+                
+                console.log('✅ Treatment info loaded');
+            } else {
+                // Hide treatment section if no treatment data
+                detailTreatmentSection.style.display = 'none';
+                console.log('ℹ️ No treatment data');
+            }
+            
+            // Show modal
+            detailModal.style.display = 'flex';
+            console.log('✅ Detail modal ditampilkan');
+        }
+        
+        // Close detail modal
+        function closeDetailModal() {
+            document.getElementById('detailModal').style.display = 'none';
         }
 
         // Filter content based on search query
@@ -1545,7 +1739,7 @@ Status Bahaya     : ${bahaya} (${total > 0 ? ((bahaya/total)*100).toFixed(1) : 0
                 exportContent += `
 ${index + 1}. ${history.food}
    ├─ Status         : ${statusIcon} ${history.status.toUpperCase()}
-   ├─ CFU            : ${history.cfu}
+   ├─ Bakteri        : ${history.fullData?.results?.bacteriaName || 'N/A'}
    ├─ Tanggal        : ${history.date}
    ├─ Waktu          : ${history.time}
    └─ ID             : ${history.id}
@@ -1555,23 +1749,23 @@ ${index + 1}. ${history.food}
                 if (history.fullData && history.fullData.results) {
                     const results = history.fullData.results;
                     
-                    if (results.confidence) {
-                        exportContent += `      Confidence    : ${results.confidence}%\n`;
+                    // Bakteri yang teridentifikasi
+                    if (results.bacteriaName) {
+                        exportContent += `      Bakteri       : ${results.bacteriaName}\n`;
+                    }
+                    
+                    // Keterangan/alasan
+                    if (results.reason) {
+                        exportContent += `      Keterangan    : ${results.reason}\n`;
                     }
 
-                    if (results.bacteria && results.bacteria.length > 0) {
-                        exportContent += `      Bakteri Teridentifikasi:\n`;
-                        results.bacteria.forEach(bacteria => {
-                            exportContent += `      - ${bacteria.name} (${bacteria.scientific})\n`;
-                            exportContent += `        CFU: ${bacteria.cfu}, Confidence: ${bacteria.confidence}%\n`;
-                        });
-                    }
-
+                    // Treatment recommendation (jika ada)
                     if (results.treatment) {
-                        exportContent += `      Rekomendasi UV:\n`;
-                        exportContent += `      - Dosis: ${results.treatment.dose} mJ/cm²\n`;
-                        exportContent += `      - Durasi: ${results.treatment.duration} menit\n`;
-                        exportContent += `      - Reduksi: ${results.treatment.reduction}%\n`;
+                        exportContent += `      Rekomendasi UV Treatment:\n`;
+                        exportContent += `      - Dosis       : ${results.treatment.uvDose} mJ/cm²\n`;
+                        exportContent += `      - Durasi      : ${results.treatment.duration} menit\n`;
+                        exportContent += `      - Reduksi     : ${results.treatment.reduction}%\n`;
+                        exportContent += `      - Fan Cooling : ${results.treatment.fanCooling}\n`;
                     }
                 }
 
@@ -1588,9 +1782,9 @@ Data ini diekspor dari BioLens Database System.
 Untuk informasi lebih lanjut, hubungi tim BioLens.
 
 Status:
-✓ AMAN    - CFU ≤ 30, tidak ada bahaya
-⚡ WARNING - CFU 31-100, perlu perhatian
-⚠️ BAHAYA  - CFU > 100, berbahaya
+✓ AMAN    - Tidak ada bakteri patogen terdeteksi
+⚡ WARNING - Ada bakteri tapi dalam jumlah kecil
+⚠️ BAHAYA  - Bakteri patogen terdeteksi, perlu sterilisasi
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 © ${now.getFullYear()} BioLens - Smart UV Sterilization System
