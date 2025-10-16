@@ -312,6 +312,25 @@
         }
       }
 
+      /* Custom styling for alert messages */
+      .alert-info {
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+        color: #0c5460;
+      }
+      
+      .alert-success {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+        color: #155724;
+      }
+      
+      .alert-warning {
+        background-color: #fff3cd;
+        border-color: #ffeaa7;
+        color: #856404;
+      }
+
       @media (max-width: 360px) {
         .auth-container {
           padding: 20px 16px;
@@ -708,39 +727,110 @@
       // Handle forgot password
       async function handleForgotPassword(e) {
         e.preventDefault();
-        const email = document.getElementById("email").value || "";
-        const emailToUse = email || prompt("Masukkan alamat email Anda:");
-
-        if (emailToUse) {
-          try {
-            await auth.sendPasswordResetEmail(emailToUse);
-            showError(
-              "Link reset password telah dikirim. Silakan periksa kotak masuk Anda.",
-              "success"
-            );
-          } catch (error) {
-            showError(error.message);
+        
+        // Get email from input field
+        const emailInput = document.getElementById("email");
+        const email = emailInput ? emailInput.value.trim() : "";
+        
+        let emailToUse = email;
+        
+        // If no email in input, ask user to enter email
+        if (!emailToUse) {
+          emailToUse = prompt("Masukkan alamat email Anda untuk reset password:");
+          
+          // If user cancels or enters empty string
+          if (!emailToUse || emailToUse.trim() === "") {
+            showError("Email diperlukan untuk reset password", "error");
+            return;
           }
+        }
+        
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(emailToUse)) {
+          showError("Format email tidak valid", "error");
+          return;
+        }
+        
+        try {
+          // Show loading message
+          showError("Mengirim link reset password...", "info");
+          
+          // Get Firebase auth instance
+          const auth = firebase.auth();
+          
+          // Send password reset email
+          await auth.sendPasswordResetEmail(emailToUse);
+          
+          // Show success message
+          showError(
+            `Link reset password telah dikirim ke ${emailToUse}. Silakan periksa kotak masuk Anda (termasuk folder spam).`,
+            "success"
+          );
+          
+          console.log("✅ Password reset email sent successfully to:", emailToUse);
+          
+        } catch (error) {
+          console.error("❌ Error sending password reset email:", error);
+          
+          // Handle specific Firebase errors
+          let errorMessage = "Terjadi kesalahan saat mengirim reset password";
+          
+          switch (error.code) {
+            case "auth/user-not-found":
+              errorMessage = "Email tidak terdaftar dalam sistem";
+              break;
+            case "auth/invalid-email":
+              errorMessage = "Format email tidak valid";
+              break;
+            case "auth/too-many-requests":
+              errorMessage = "Terlalu banyak permintaan. Silakan coba lagi nanti";
+              break;
+            case "auth/network-request-failed":
+              errorMessage = "Koneksi internet bermasalah. Silakan coba lagi";
+              break;
+            default:
+              errorMessage = error.message || "Gagal mengirim reset password";
+          }
+          
+          showError(errorMessage, "error");
         }
       }
 
-      // Show error/success message
+      // Show error/success/info message
       function showError(message, type = "error") {
         const errorDiv = document.getElementById("error-message");
         if (!errorDiv) return;
 
         errorDiv.textContent = message;
-        errorDiv.className = `alert alert-${
-          type === "error" ? "danger" : "success"
-        }`;
+        
+        // Set appropriate Bootstrap alert class based on type
+        let alertClass = "alert-danger"; // default to error
+        if (type === "success") {
+          alertClass = "alert-success";
+        } else if (type === "info") {
+          alertClass = "alert-info";
+        } else if (type === "warning") {
+          alertClass = "alert-warning";
+        }
+        
+        errorDiv.className = `alert ${alertClass}`;
         errorDiv.classList.remove("d-none");
 
-        // Auto-hide after 5 seconds
+        // Auto-hide after different durations based on type
         if (message) {
           clearTimeout(window.errorTimeout);
+          
+          let hideDelay = 5000; // default 5 seconds
+          if (type === "success") {
+            hideDelay = 8000; // 8 seconds for success messages
+          } else if (type === "info") {
+            hideDelay = 6000; // 6 seconds for info messages
+          }
+          
           window.errorTimeout = setTimeout(() => {
             errorDiv.classList.add("d-none");
-          }, 5000);
+          }, hideDelay);
         }
 
         // Scroll to error message
@@ -756,8 +846,17 @@
       forgotPasswordLinks.forEach((link) => {
         if (link) {
           link.addEventListener("click", handleForgotPassword);
+          console.log("✅ Forgot password event listener added to:", link.id);
         }
       });
+
+      // Ensure the inline forgot password link works
+      const forgotPasswordInline = document.getElementById("forgot-password-inline");
+      if (forgotPasswordInline) {
+        console.log("✅ Forgot password inline link found and configured");
+      } else {
+        console.warn("⚠️ Forgot password inline link not found");
+      }
 
       // Check if user is already logged in
       auth.onAuthStateChanged((user) => {
