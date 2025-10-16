@@ -621,10 +621,11 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: white;
-            border-top: 2px solid var(--blue-100);
-            box-shadow: 0 -10px 25px -5px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--gray-200);
             z-index: 50;
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         .nav-container {
@@ -632,6 +633,7 @@
             margin: 0 auto;
             display: grid;
             grid-template-columns: repeat(5, 1fr);
+            padding: 0.5rem;
         }
 
         .nav-btn {
@@ -656,8 +658,8 @@
         }
 
         .nav-btn i {
-            font-size: 1rem;
-            margin-bottom: 0.125rem;
+            font-size: 1.25rem;
+            margin-bottom: 0.25rem;
         }
 
         .nav-btn.active i {
@@ -665,7 +667,7 @@
         }
 
         .nav-label {
-            font-size: 0.5625rem;
+            font-size: 0.7rem;
         }
 
         .nav-btn.active .nav-label {
@@ -908,7 +910,7 @@
             <a href="profile.html" class="nav-btn active" id="profile-btn">
                 <i class="fas fa-user"></i>
                 <span class="nav-label">Profile</span>
-            </button>
+            </a>
         </div>
     </div>
 
