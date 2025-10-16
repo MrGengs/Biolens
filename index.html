@@ -57,6 +57,15 @@
             padding-top: 4rem;
             padding-bottom: 4rem;
         }
+        
+        /* Mobile-specific body padding */
+        @media (max-width: 640px) {
+            body {
+                padding: 1rem;
+                padding-top: 2rem;
+                padding-bottom: 2rem;
+            }
+        }
 
         body::-webkit-scrollbar {
             display: none;
@@ -97,8 +106,11 @@
             font-size: 1.25rem;
             margin-bottom: 2rem;
             max-width: 600px;
+            width: 100%;
             line-height: 1.6;
             opacity: 0.9;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .description {
@@ -107,6 +119,7 @@
             border-radius: 1rem;
             margin: 2rem 0;
             max-width: 600px;
+            width: 100%;
             border: 1px solid var(--gray-200);
             color: var(--gray-700);
         }
@@ -114,6 +127,8 @@
         .description p {
             margin-bottom: 1rem;
             line-height: 1.6;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .btn {
@@ -141,6 +156,7 @@
             gap: 1.5rem;
             margin: 2rem 0;
             max-width: 800px;
+            width: 100%;
         }
 
         .feature {
@@ -188,6 +204,8 @@
             font-size: 1.25rem;
             font-weight: 700;
             color: var(--gray-900);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .feature p {
@@ -195,6 +213,8 @@
             color: var(--gray-700);
             line-height: 1.6;
             margin: 0;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         @keyframes pulse {
@@ -209,22 +229,156 @@
             }
         }
 
-        @media (max-width: 640px) {
+        /* Mobile-friendly styles for tablets and smaller */
+        @media (max-width: 768px) {
+            .logo {
+                width: 150px;
+                height: 150px;
+                margin-bottom: 1rem;
+            }
+            
             h1 {
                 font-size: 2rem;
+                margin-bottom: 0.75rem;
             }
             
             .tagline {
                 font-size: 1.1rem;
+                margin-bottom: 1.5rem;
+                padding: 0 1rem;
+            }
+            
+            .description {
+                padding: 1.5rem;
+                margin: 1.5rem 0;
+                width: 100%;
+            }
+            
+            .description p {
+                font-size: 0.95rem;
+            }
+            
+            .features {
+                margin: 1.5rem 0;
+                gap: 1rem;
+            }
+            
+            .feature {
+                padding: 1.5rem 1rem;
+            }
+        }
+        
+        /* Mobile-friendly styles for phones */
+        @media (max-width: 640px) {
+            .logo {
+                width: 120px;
+                height: 120px;
+                margin-bottom: 0.5rem;
+            }
+            
+            .logo i {
+                font-size: 3rem;
+            }
+            
+            h1 {
+                font-size: 1.75rem;
+                margin-bottom: 0.5rem;
+                line-height: 1.3;
+            }
+            
+            .tagline {
+                font-size: 1rem;
+                margin-bottom: 1rem;
+                padding: 0 0.5rem;
+                line-height: 1.5;
+            }
+            
+            .description {
+                padding: 1.25rem;
+                margin: 1rem 0;
+                border-radius: 0.75rem;
+            }
+            
+            .description p {
+                font-size: 0.9rem;
+                margin-bottom: 0.75rem;
+                line-height: 1.7;
             }
             
             .features {
                 flex-direction: column;
                 width: 100%;
+                gap: 1rem;
+                margin: 1rem 0;
             }
             
             .feature {
                 width: 100%;
+                padding: 1.5rem 1rem;
+            }
+            
+            .feature-icon {
+                width: 56px;
+                height: 56px;
+                margin-bottom: 1rem;
+            }
+            
+            .feature i {
+                font-size: 1.75rem;
+            }
+            
+            .feature h3 {
+                font-size: 1.1rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .feature p {
+                font-size: 0.9rem;
+                line-height: 1.6;
+            }
+            
+            .btn {
+                padding: 0.875rem 2rem;
+                font-size: 1rem;
+                margin-top: 0.5rem;
+                width: 100%;
+                max-width: 280px;
+            }
+        }
+        
+        /* Extra small phones */
+        @media (max-width: 375px) {
+            .logo {
+                width: 100px;
+                height: 100px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .tagline {
+                font-size: 0.95rem;
+            }
+            
+            .description {
+                padding: 1rem;
+            }
+            
+            .description p {
+                font-size: 0.85rem;
+            }
+            
+            .feature {
+                padding: 1.25rem 0.875rem;
+            }
+            
+            .feature h3 {
+                font-size: 1rem;
+            }
+            
+            .feature p {
+                font-size: 0.85rem;
             }
         }
     </style>
