@@ -1113,6 +1113,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-storage-compat.js"></script>
+    <script src="js/config.js"></script>
     <script src="firebase/config.js"></script>
 
     <script>
@@ -1284,7 +1285,8 @@
         // dalam format JSON yang berisi informasi tentang bakteri terdeteksi
         // ================================================================
         async function analyzeWithGemini(imageData) {
-            const GEMINI_API_KEY = 'AIzaSyBKCLB3d6ucJOMjnShtQogMFh6OHVL2Mck';
+            // Menggunakan API key dari config.js (aman, tidak ter-commit ke GitHub)
+            const GEMINI_API_KEY = API_CONFIG.GEMINI_API_KEY;
             
             // Menggunakan Gemini 2.0 Flash - model terbaru yang support vision
             // Gemini 2.0/2.5 sudah built-in multimodal (text + image)

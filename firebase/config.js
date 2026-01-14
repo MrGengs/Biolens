@@ -1,13 +1,7 @@
 // Konfigurasi Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyBQfXf3X16iPx-w_BJo8X2Oz7jCCTtLiWc",
-  authDomain: "biolens-1.firebaseapp.com",
-  databaseURL: "https://biolens-1-default-rtdb.asia-southeast1.firebasedatabase.app", // Realtime Database URL (Asia Southeast region)
-  projectId: "biolens-1",
-  storageBucket: "biolens-1.firebasestorage.app",
-  messagingSenderId: "209727967883",
-  appId: "1:209727967883:web:7044b0ea8b9bf329fc3a8e",
-};
+// Menggunakan config dari js/config.js (aman, tidak ter-commit ke GitHub)
+// Pastikan js/config.js sudah di-load sebelum file ini
+const firebaseConfig = API_CONFIG.FIREBASE_CONFIG;
 
 // Inisialisasi Firebase
 if (!firebase.apps.length) {

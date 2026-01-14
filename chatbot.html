@@ -320,10 +320,12 @@
         </div>
     </div>
 
+    <script src="js/config.js"></script>
     <script src="https://www.gstatic.com/gemini/alpha/sdk.js"></script>
     <script>
         // Inisialisasi Gemini
-        const GEMINI_API_KEY = 'AIzaSyBKCLB3d6ucJOMjnShtQogMFh6OHVL2Mck';
+        // Menggunakan API key dari config.js (aman, tidak ter-commit ke GitHub)
+        const GEMINI_API_KEY = API_CONFIG.GEMINI_API_KEY;
         let genai;
         let model;
         let chat;

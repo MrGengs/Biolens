@@ -1245,21 +1245,14 @@
         </div>
     </nav>
 
+    <script src="js/config.js"></script>
     <script type="module">
         // Import Firebase SDK
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getDatabase, ref, onValue, set, update, get, onDisconnect } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
         
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBQfXf3X16iPx-w_BJo8X2Oz7jCCTtLiWc",
-            authDomain: "biolens-1.firebaseapp.com",
-            databaseURL: "https://biolens-1-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "biolens-1",
-            storageBucket: "biolens-1.firebasestorage.app",
-            messagingSenderId: "209727967883",
-            appId: "1:209727967883:web:7044b0ea8b9bf329fc3a8e"
-        };
+        // Firebase Configuration - Menggunakan config dari config.js (aman, tidak ter-commit ke GitHub)
+        const firebaseConfig = API_CONFIG.FIREBASE_CONFIG;
         
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
